@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Util Modules — Thread</title>
-<meta name="description" content="Signal, Trove, TableUtil, Option, and EnumList — Thread's hand-written RbxUtil-inspired utility modules.">
+<meta name="description" content="Signal, Trove, TableUtil, Option, EnumList, and MathUtil — Thread's hand-written RbxUtil-inspired utility modules.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧵</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -213,6 +213,29 @@ Direction:FromValue(<span class="tok-string">1</span>)                <span clas
 		<code>table.freeze</code> at creation time — you can't add members after the fact or
 		mutate an item's fields, which is what makes <code>==</code> comparisons reliable.
 	</p>
+
+	<h2 id="mathutil"><code>MathUtil</code></h2>
+	<p>
+		Small numeric helpers Roblox's own <code>math</code> library doesn't already provide
+		(<code>math.clamp</code>/<code>math.round</code>/<code>math.sign</code>/<code>math.noise</code>
+		etc. cover the rest — this module doesn't duplicate them).
+	</p>
+	<pre><code>MathUtil.Lerp(<span class="tok-string">0</span>, <span class="tok-string">10</span>, <span class="tok-string">0.5</span>)                   <span class="tok-comment">--&gt; 5</span>
+MathUtil.MapRange(<span class="tok-string">0.5</span>, <span class="tok-string">0</span>, <span class="tok-string">1</span>, <span class="tok-string">0</span>, <span class="tok-string">100</span>)        <span class="tok-comment">--&gt; 50</span>
+MathUtil.FuzzyEquals(<span class="tok-string">0.1</span> + <span class="tok-string">0.2</span>, <span class="tok-string">0.3</span>, <span class="tok-string">1e-9</span>)  <span class="tok-comment">--&gt; true</span></code></pre>
+	<p>
+		<code>MapRange(value, inMin, inMax, outMin, outMax)</code> rescales <code>value</code>
+		from the <code>inMin..inMax</code> range into <code>outMin..outMax</code> — useful for
+		things like mapping a joystick's <code>-1..1</code> axis onto a <code>0..100</code> UI
+		bar. <code>FuzzyEquals</code> is for comparing floats that accumulated rounding error and
+		shouldn't be checked with <code>==</code>.
+	</p>
+	<div class="callout warn">
+		<div class="callout-title">Divide-by-zero</div>
+		Passing <code>inMin == inMax</code> to <code>MapRange</code> divides by zero — Lua floats
+		give you <code>inf</code>/<code>nan</code> back rather than an error, so it's on the
+		caller to avoid that input.
+	</div>
 
 	<div class="page-nav">
 		<a href="promise.html">

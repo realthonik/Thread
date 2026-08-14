@@ -1,0 +1,12 @@
+{
+    "luau-lsp.platform.type": "roblox",
+    "luau-lsp.studioPlugin.enabled": false,
+    "luau-lsp.sourcemap.enabled": false,
+    "[luau]": {
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": false
+        }
+    }
+}

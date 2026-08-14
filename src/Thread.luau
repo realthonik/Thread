@@ -109,6 +109,7 @@ Thread.Trove = require(script.Parent.Util.Trove)
 Thread.TableUtil = require(script.Parent.Util.TableUtil)
 Thread.Option = require(script.Parent.Util.Option)
 Thread.EnumList = require(script.Parent.Util.EnumList)
+Thread.MathUtil = require(script.Parent.Util.MathUtil)
 
 --------------------------------------------------
 -- Service Creation

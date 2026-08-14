@@ -2,7 +2,7 @@
 
 A lightweight Roblox framework for building scalable games with a clean **Service Architecture**, a **typed Communication System**, and a small **Promise** implementation for startup sequencing.
 
-Based on the previous model "Wire v1.1.1. by me". This version adds typed service `Client` tables, Signals/Properties (with per-player overrides), middleware, dependency ordering, a richer Promise, and hand-written equivalents of the most-used [RbxUtil](https://github.com/Sleitnick/RbxUtil) modules (Signal, Trove, TableUtil, Option, EnumList) — while staying **100% Roblox-native**: no Wally, no package manager, no third-party code. Every file here is plain `.luau`.
+Based on the previous model "Wire v1.1.1. by me". This version adds typed service `Client` tables, Signals/Properties (with per-player overrides), middleware, dependency ordering, a richer Promise, and hand-written equivalents of the most-used [RbxUtil](https://github.com/Sleitnick/RbxUtil) modules (Signal, Trove, TableUtil, Option, EnumList, MathUtil) — while staying **100% Roblox-native**: no Wally, no package manager, no third-party code. Every file here is plain `.luau`.
 
 This document explains not just *what* each piece does, but *how it works internally* and *when to reach for it* — it's meant to be read top to bottom once, then used as a reference afterward.
 
@@ -41,7 +41,8 @@ Thread/
 │       ├── Trove.luau       -- cleanup/janitor helper
 │       ├── TableUtil.luau   -- table helper functions
 │       ├── Option.luau      -- explicit nil-handling wrapper
-│       └── EnumList.luau    -- custom, comparable enums
+│       ├── EnumList.luau    -- custom, comparable enums
+│       └── MathUtil.luau    -- lerp, range remapping, fuzzy equality
 ├── Tests/
 │   ├── TestRunner.luau   -- ~30-line assert-based test runner, no TestEZ
 │   └── Thread.spec.luau  -- the actual test suite
@@ -67,10 +68,11 @@ ReplicatedStorage
         ├── Trove.luau
         ├── TableUtil.luau
         ├── Option.luau
-        └── EnumList.luau
+        ├── EnumList.luau
+        └── MathUtil.luau
 ```
 
-`Util` **must** be a `Folder` Instance containing the five modules as children — `Thread.luau` requires them via `script.Parent.Util.Signal` etc., so the hierarchy has to match exactly.
+`Util` **must** be a `Folder` Instance containing the six modules as children — `Thread.luau` requires them via `script.Parent.Util.Signal` etc., so the hierarchy has to match exactly.
 
 There is no fixed location for your own game code — `Thread.Register(folder)` just points at whatever folder you keep your services/controllers in. The conventional layout is:
 
@@ -596,6 +598,18 @@ Use this instead of raw strings whenever you have a fixed, known set of named st
 
 Both the `EnumList` itself and every individual item (`Direction.North`, etc.) are deep-frozen with `table.freeze` at creation time — you can't add members after the fact or mutate an item's `Name`/`Value`, which is what makes `==` comparisons between items reliable.
 
+### `MathUtil`
+
+Small numeric helpers Roblox's own `math` library doesn't already provide (`math.clamp`/`math.round`/`math.sign`/`math.noise` etc. cover the rest — this module doesn't duplicate them).
+
+```lua
+MathUtil.Lerp(0, 10, 0.5)                   --> 5
+MathUtil.MapRange(0.5, 0, 1, 0, 100)        --> 50
+MathUtil.FuzzyEquals(0.1 + 0.2, 0.3, 1e-9)  --> true
+```
+
+`MapRange(value, inMin, inMax, outMin, outMax)` rescales `value` from the `inMin..inMax` range into `outMin..outMax` — useful for things like mapping a joystick's `-1..1` axis onto a `0..100` UI bar. Passing `inMin == inMax` divides by zero (Lua floats give `inf`/`nan`, not an error) — that's on the caller to avoid. `FuzzyEquals` is for comparing floats that accumulated rounding error and shouldn't be checked with `==`.
+
 ## Server vs. Client Cheat Sheet
 
 The single most important thing to internalize: **the server and every client each run their own separate instance of `Thread`'s internal state** (`Thread._Register`, its own start `Promise`, etc.) — they are different Lua VMs entirely. Nothing about a service you create on the server is automatically visible to `Thread.GetService` on the client, or vice versa. `Channel` is the only bridge between the two.
@@ -698,7 +712,7 @@ Two different `ModuleScript`s called `Thread.CreateService({ Name = "X" })` with
 | `Thread.CreateSignal()` / `Thread.CreateUnreliableSignal()` / `Thread.CreateProperty(v)` | Markers for use inside a service's `Client` table. |
 | `Thread.Version` | Current version string. |
 | `Thread.Channel` | Direct access to the `Channel` module. |
-| `Thread.Signal` / `.Trove` / `.TableUtil` / `.Option` / `.EnumList` | Direct access to the Util modules. |
+| `Thread.Signal` / `.Trove` / `.TableUtil` / `.Option` / `.EnumList` / `.MathUtil` | Direct access to the Util modules. |
 
 ### `Channel`
 | Function | Description |
