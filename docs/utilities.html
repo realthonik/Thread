@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Util Modules — Thread</title>
-<meta name="description" content="Signal, Trove, TableUtil, Option, EnumList, and MathUtil — Thread's hand-written RbxUtil-inspired utility modules.">
+<meta name="description" content="Signal, Trove, TableUtil, Option, EnumList, MathUtil, and TimerUtil — Thread's hand-written RbxUtil-inspired utility modules.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧵</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -235,6 +235,29 @@ MathUtil.FuzzyEquals(<span class="tok-string">0.1</span> + <span class="tok-stri
 		Passing <code>inMin == inMax</code> to <code>MapRange</code> divides by zero — Lua floats
 		give you <code>inf</code>/<code>nan</code> back rather than an error, so it's on the
 		caller to avoid that input.
+	</div>
+
+	<h2 id="timerutil"><code>TimerUtil</code></h2>
+	<p>
+		Debounce/throttle wrappers for rate-limiting how often a function runs.
+	</p>
+	<pre><code><span class="tok-keyword">local</span> onClick = Thread.TimerUtil.Debounce(<span class="tok-keyword">function</span>()
+    <span class="tok-func">print</span>(<span class="tok-string">"clicked"</span>)
+<span class="tok-keyword">end</span>, <span class="tok-string">1</span>)
+
+button.MouseButton1Click:Connect(onClick) <span class="tok-comment">-- ignores clicks within 1s of the last one</span></code></pre>
+	<p>
+		<code>Debounce(fn, seconds)</code> runs <code>fn</code> immediately on the first call,
+		then ignores every call for <code>seconds</code> afterward until the cooldown expires —
+		the classic pattern for stopping a <code>Touched</code> event from firing twice.
+		<code>Throttle(fn, seconds)</code> runs <code>fn</code> immediately too, but instead caps
+		it to at most once per <code>seconds</code>. Both return a new wrapped function; they
+		don't mutate <code>fn</code>.
+	</p>
+	<div class="callout warn">
+		<div class="callout-title">No trailing call</div>
+		Calls dropped during the cooldown/interval are simply discarded — neither function queues
+		a trailing call to run once the window reopens.
 	</div>
 
 	<div class="page-nav">

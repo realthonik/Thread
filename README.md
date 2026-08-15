@@ -2,7 +2,7 @@
 
 A lightweight Roblox framework for building scalable games with a clean **Service Architecture**, a **typed Communication System**, and a small **Promise** implementation for startup sequencing.
 
-Based on the previous model "Wire v1.1.1. by me". This version adds typed service `Client` tables, Signals/Properties (with per-player overrides), middleware, dependency ordering, a richer Promise, and hand-written equivalents of the most-used [RbxUtil](https://github.com/Sleitnick/RbxUtil) modules (Signal, Trove, TableUtil, Option, EnumList, MathUtil) — while staying **100% Roblox-native**: no Wally, no package manager, no third-party code. Every file here is plain `.luau`.
+Based on the previous model "Wire v1.1.1. by me". This version adds typed service `Client` tables, Signals/Properties (with per-player overrides), middleware, dependency ordering, a richer Promise, and hand-written equivalents of the most-used [RbxUtil](https://github.com/Sleitnick/RbxUtil) modules (Signal, Trove, TableUtil, Option, EnumList, MathUtil, TimerUtil) — while staying **100% Roblox-native**: no Wally, no package manager, no third-party code. Every file here is plain `.luau`.
 
 This document explains not just *what* each piece does, but *how it works internally* and *when to reach for it* — it's meant to be read top to bottom once, then used as a reference afterward.
 
@@ -42,7 +42,8 @@ Thread/
 │       ├── TableUtil.luau   -- table helper functions
 │       ├── Option.luau      -- explicit nil-handling wrapper
 │       ├── EnumList.luau    -- custom, comparable enums
-│       └── MathUtil.luau    -- lerp, range remapping, fuzzy equality
+│       ├── MathUtil.luau    -- lerp, range remapping, fuzzy equality
+│       └── TimerUtil.luau   -- debounce/throttle function wrappers
 ├── Tests/
 │   ├── TestRunner.luau   -- ~30-line assert-based test runner, no TestEZ
 │   └── Thread.spec.luau  -- the actual test suite
@@ -69,10 +70,11 @@ ReplicatedStorage
         ├── TableUtil.luau
         ├── Option.luau
         ├── EnumList.luau
-        └── MathUtil.luau
+        ├── MathUtil.luau
+        └── TimerUtil.luau
 ```
 
-`Util` **must** be a `Folder` Instance containing the six modules as children — `Thread.luau` requires them via `script.Parent.Util.Signal` etc., so the hierarchy has to match exactly.
+`Util` **must** be a `Folder` Instance containing the seven modules as children — `Thread.luau` requires them via `script.Parent.Util.Signal` etc., so the hierarchy has to match exactly.
 
 There is no fixed location for your own game code — `Thread.Register(folder)` just points at whatever folder you keep your services/controllers in. The conventional layout is:
 
@@ -610,6 +612,20 @@ MathUtil.FuzzyEquals(0.1 + 0.2, 0.3, 1e-9)  --> true
 
 `MapRange(value, inMin, inMax, outMin, outMax)` rescales `value` from the `inMin..inMax` range into `outMin..outMax` — useful for things like mapping a joystick's `-1..1` axis onto a `0..100` UI bar. Passing `inMin == inMax` divides by zero (Lua floats give `inf`/`nan`, not an error) — that's on the caller to avoid. `FuzzyEquals` is for comparing floats that accumulated rounding error and shouldn't be checked with `==`.
 
+### `TimerUtil`
+
+Debounce/throttle wrappers for rate-limiting how often a function runs.
+
+```lua
+local onClick = Thread.TimerUtil.Debounce(function()
+    print("clicked")
+end, 1)
+
+button.MouseButton1Click:Connect(onClick) -- ignores clicks within 1s of the last one
+```
+
+`Debounce(fn, seconds)` runs `fn` immediately on the first call, then ignores every call for `seconds` afterward until the cooldown expires — the classic pattern for stopping a `Touched` event from firing twice. `Throttle(fn, seconds)` runs `fn` immediately too, but instead caps it to at most once per `seconds` — no trailing call is scheduled for calls that get dropped, so the last call in a burst may simply be lost rather than deferred. Both return a new wrapped function; they don't mutate `fn`.
+
 ## Server vs. Client Cheat Sheet
 
 The single most important thing to internalize: **the server and every client each run their own separate instance of `Thread`'s internal state** (`Thread._Register`, its own start `Promise`, etc.) — they are different Lua VMs entirely. Nothing about a service you create on the server is automatically visible to `Thread.GetService` on the client, or vice versa. `Channel` is the only bridge between the two.
@@ -712,7 +728,7 @@ Two different `ModuleScript`s called `Thread.CreateService({ Name = "X" })` with
 | `Thread.CreateSignal()` / `Thread.CreateUnreliableSignal()` / `Thread.CreateProperty(v)` | Markers for use inside a service's `Client` table. |
 | `Thread.Version` | Current version string. |
 | `Thread.Channel` | Direct access to the `Channel` module. |
-| `Thread.Signal` / `.Trove` / `.TableUtil` / `.Option` / `.EnumList` / `.MathUtil` | Direct access to the Util modules. |
+| `Thread.Signal` / `.Trove` / `.TableUtil` / `.Option` / `.EnumList` / `.MathUtil` / `.TimerUtil` | Direct access to the Util modules. |
 
 ### `Channel`
 | Function | Description |
