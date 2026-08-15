@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.0
+
+### Added
+
+- **MathUtil**
+- **TimerUtil**
+
 ## v1.0.1
 
 ### Fixed
