@@ -16,16 +16,18 @@ local TimerUtil = {}
 -- `seconds` after that is ignored until the cooldown expires. The classic
 -- "debounce" idiom for things like preventing a Touched event from double-firing.
 function TimerUtil.Debounce<T...>(fn: (T...) -> (), seconds: number): (T...) -> ()
+	assert(type(fn) == "function", "TimerUtil.Debounce: fn must be a function")
+	assert(type(seconds) == "number" and seconds >= 0, "TimerUtil.Debounce: seconds must be non-negative")
 	local ready = true
 	return function(...: T...)
 		if not ready then
 			return
 		end
 		ready = false
-		fn(...)
 		task.delay(seconds, function()
 			ready = true
 		end)
+		fn(...)
 	end
 end
 
@@ -33,7 +35,9 @@ end
 -- burst runs immediately, calls before the interval elapses are dropped
 -- (no trailing call is scheduled for them).
 function TimerUtil.Throttle<T...>(fn: (T...) -> (), seconds: number): (T...) -> ()
-	local lastRun = 0
+	assert(type(fn) == "function", "TimerUtil.Throttle: fn must be a function")
+	assert(type(seconds) == "number" and seconds >= 0, "TimerUtil.Throttle: seconds must be non-negative")
+	local lastRun = -math.huge
 	return function(...: T...)
 		local now = os.clock()
 		if now - lastRun < seconds then

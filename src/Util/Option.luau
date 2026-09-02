@@ -40,11 +40,11 @@ local Option = {}
 Option.__index = Option
 
 local function new(value: any): any
-	return setmetatable({
+	return table.freeze(setmetatable({
 		ClassName = CLASS_NAME,
 		_value = value,
 		_isSome = value ~= nil,
-	}, Option)
+	}, Option))
 end
 
 -- Errors if `value` is nil - use this when you already know the value is

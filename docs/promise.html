@@ -16,7 +16,7 @@
 <nav class="sidebar">
 	<div class="sidebar-brand">
 		<span class="logo">🧵 Thread</span>
-		<span class="version">v1.0.1</span>
+		<span class="version">v1.1.0</span>
 	</div>
 
 	<div class="nav-group">
@@ -68,7 +68,8 @@
 		<tr><td><code>promise:finally(callback)</code></td><td>Runs <code>callback()</code> regardless of outcome, then passes the original result/error through.</td></tr>
 		<tr><td><code>promise:timeout(seconds, err?)</code></td><td>Rejects if <code>promise</code> hasn't settled within <code>seconds</code>. Doesn't cancel the underlying work, just stops waiting for it.</td></tr>
 		<tr><td><code>promise:await()</code></td><td>Yields the current thread until settled; returns the value or <code>error()</code>s with the rejection reason.</td></tr>
-		<tr><td><code>promise:getState()</code></td><td>Returns <code>"Pending"</code>, <code>"Resolved"</code>, or <code>"Rejected"</code>.</td></tr>
+		<tr><td><code>promise:getState()</code></td><td>Returns <code>"Pending"</code>, <code>"Resolved"</code>, <code>"Rejected"</code>, or <code>"Cancelled"</code>.</td></tr>
+		<tr><td><code>promise:cancel(reason?)</code></td><td>Cancels pending work, runs registered cleanup, and enters the <code>"Cancelled"</code> state.</td></tr>
 	</table>
 	</div>
 
@@ -76,8 +77,9 @@
 	<div class="table-wrap">
 	<table>
 		<tr><th>Function</th><th>When to use it</th></tr>
-		<tr><td><code>Promise.new(function(resolve, reject) ... end)</code></td><td>Wrap any async operation manually.</td></tr>
+		<tr><td><code>Promise.new(function(resolve, reject, onCancel) ... end)</code></td><td>Wrap async work and optionally register cancellation cleanup.</td></tr>
 		<tr><td><code>Promise.resolve(value)</code> / <code>Promise.reject(err)</code></td><td>Build an already-settled promise.</td></tr>
+		<tr><td><code>Promise.cancelled(reason?)</code></td><td>Build a cancelled Promise.</td></tr>
 		<tr><td><code>Promise.all({...})</code></td><td>Every promise must succeed; one failure rejects the whole batch immediately.</td></tr>
 		<tr><td><code>Promise.allSettled({...})</code></td><td>Run several things, never reject — get a per-entry <code>{Status, Value}</code>/<code>{Status, Error}</code> report.</td></tr>
 		<tr><td><code>Promise.race({...})</code></td><td>Settles with whichever promise finishes first (success or failure).</td></tr>
@@ -86,6 +88,8 @@
 		<tr><td><code>Promise.retry(fn, attempts)</code></td><td>Calls <code>fn()</code> (must return a promise) up to <code>attempts</code> times, stopping at the first success.</td></tr>
 		<tr><td><code>Promise.fromEvent(signal, predicate?)</code></td><td>Wraps any RBXScriptSignal (or a <code>Thread.Signal</code>) into a one-shot promise that resolves the next time it fires.</td></tr>
 		<tr><td><code>Promise.is(value)</code></td><td><code>true</code> if <code>value</code> is a Promise instance.</td></tr>
+		<tr><td><code>Promise.isCancelledError(value)</code></td><td>Distinguishes cancellation from ordinary rejection.</td></tr>
+		<tr><td><code>Promise.setUnhandledRejectionHandler(fn?)</code></td><td>Configures reporting for rejected Promises with no observer.</td></tr>
 	</table>
 	</div>
 

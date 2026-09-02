@@ -103,10 +103,12 @@ end
 --------------------------------------------------
 
 function Signal.new(): Signal
-	return (setmetatable({
-		_handlerListHead = nil,
-		_proxyConnection = nil :: RBXScriptConnection?,
-	}, Signal) :: any) :: Signal
+	return (
+		setmetatable({
+			_handlerListHead = nil,
+			_proxyConnection = nil :: RBXScriptConnection?,
+		}, Signal) :: any
+	) :: Signal
 end
 
 -- Wraps an existing RBXScriptSignal so it can be used through this same API

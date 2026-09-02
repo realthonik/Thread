@@ -16,7 +16,7 @@
 <nav class="sidebar">
 	<div class="sidebar-brand">
 		<span class="logo">🧵 Thread</span>
-		<span class="version">v1.0.1</span>
+		<span class="version">v1.1.0</span>
 	</div>
 
 	<div class="nav-group">
@@ -53,16 +53,17 @@
 	<div class="eyebrow">Get Started</div>
 	<h1>Installation &amp; Project Anatomy</h1>
 	<p class="lede">
-		Nothing here requires anything outside these files. No Wally manifest, no build
-		step — copy <code>Packages/</code> into your game and require it.
+		The runtime has no third-party dependencies. Copy <code>src/</code> directly, use the
+		included Rojo mappings, or consume the generated Wally package manifest.
 	</p>
 
 	<h2>Project Anatomy</h2>
 	<pre><code>Thread/
-├── Packages/
+├── src/                  <span class="tok-comment">-- copy/map this to ReplicatedStorage/Packages</span>
 │   ├── Thread.luau      <span class="tok-comment">-- service registry + lifecycle + startup sequencing</span>
 │   ├── Channel.luau     <span class="tok-comment">-- everything networking-related (RemoteEvents/Functions)</span>
 │   ├── Promise.luau     <span class="tok-comment">-- async primitive used by Thread.Start()/OnStart()</span>
+│   ├── Generated/       <span class="tok-comment">-- generated package metadata</span>
 │   └── Util/
 │       ├── Signal.luau      <span class="tok-comment">-- fast in-process pub/sub (no Instance overhead)</span>
 │       ├── Trove.luau       <span class="tok-comment">-- cleanup/janitor helper</span>
@@ -74,16 +75,22 @@
 ├── Tests/
 │   ├── TestRunner.luau   <span class="tok-comment">-- ~30-line assert-based test runner, no TestEZ</span>
 │   └── Thread.spec.luau  <span class="tok-comment">-- the actual test suite</span>
+├── generated/            <span class="tok-comment">-- service manifest and static client types</span>
+├── default.project.json  <span class="tok-comment">-- Rojo test-place mapping</span>
+├── integration.project.json
+├── thread.config.json    <span class="tok-comment">-- version and generation source</span>
+├── rokit.toml
+├── wally.toml
 ├── README.md
 ├── CHANGELOG.md
 └── LICENSE</code></pre>
 
 	<h2>Installation</h2>
 	<p>
-		Copy the whole <code>Packages/</code> folder (including the <code>Util/</code>
+		Copy the contents of <code>src/</code> (including the <code>Util/</code>
 		subfolder) into <code>ReplicatedStorage/Packages/</code>, either by dragging files
-		into Studio directly or via a Rojo project (Rojo is optional — nothing in this
-		codebase depends on it).
+		into Studio directly or by mapping <code>src</code> there in a Rojo project.
+		Rojo is optional.
 	</p>
 
 	<pre><code>ReplicatedStorage
@@ -91,6 +98,8 @@
     ├── Thread.luau
     ├── Channel.luau
     ├── Promise.luau
+    ├── Generated
+    │   └── Metadata.luau
     └── Util
         ├── Signal.luau
         ├── Trove.luau
@@ -102,7 +111,7 @@
 
 	<div class="callout warn">
 		<div class="callout-title">Important</div>
-		<code>Util</code> must be a <code>Folder</code> Instance containing the five modules
+		<code>Util</code> must be a <code>Folder</code> Instance containing the seven modules
 		as children — <code>Thread.luau</code> requires them via
 		<code>script.Parent.Util.Signal</code> etc., so the hierarchy has to match exactly.
 	</div>

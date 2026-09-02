@@ -46,15 +46,21 @@ local EnumList = {}
 EnumList.__index = EnumList
 
 function EnumList.new(name: string, names: { string }): EnumList
-	assert(type(name) == "string", "EnumList.new: name must be a string")
+	assert(type(name) == "string" and #name > 0, "EnumList.new: name must be a non-empty string")
 	assert(type(names) == "table", "EnumList.new: names must be a table of strings")
+	local nameCount = 0
+	for index in pairs(names) do
+		assert(type(index) == "number" and index % 1 == 0 and index >= 1, "EnumList.new: names must be an array")
+		nameCount += 1
+	end
+	assert(nameCount == #names, "EnumList.new: names must be a dense array")
 
 	local self: any = setmetatable({}, EnumList)
 	self[LIST_KEY] = {}
 	self[NAME_KEY] = name
 
 	for i, itemName in ipairs(names) do
-		assert(type(itemName) == "string", "EnumList.new: every enum name must be a string")
+		assert(type(itemName) == "string" and #itemName > 0, "EnumList.new: every enum name must be a non-empty string")
 		assert(self[itemName] == nil, ("EnumList.new: duplicate enum name '%s'"):format(itemName))
 
 		local item = createEnumItem(itemName, i, self)
@@ -62,6 +68,7 @@ function EnumList.new(name: string, names: { string }): EnumList
 		table.insert(self[LIST_KEY], item)
 	end
 
+	table.freeze(self[LIST_KEY])
 	return table.freeze(self) :: EnumList
 end
 

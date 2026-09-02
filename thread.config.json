@@ -1,0 +1,11 @@
+{
+  "package": {
+    "name": "realthonik/thread",
+    "version": "1.1.0",
+    "description": "A dependency-aware service framework and networking layer for Roblox",
+    "license": "MIT",
+    "realm": "shared",
+    "authors": ["realthonik"]
+  },
+  "services": {}
+}

@@ -16,7 +16,7 @@
 <nav class="sidebar">
 	<div class="sidebar-brand">
 		<span class="logo">🧵 Thread</span>
-		<span class="version">v1.0.1</span>
+		<span class="version">v1.1.0</span>
 	</div>
 
 	<div class="nav-group">
@@ -107,11 +107,12 @@
 	<div class="table-wrap">
 	<table>
 		<tr><th>Type</th><th>From</th><th>Shape</th></tr>
-		<tr><td><code>Thread.ServiceDef</code> / <code>Thread.Service</code></td><td>Thread</td><td><code>Name</code>, <code>Client?</code>, <code>Dependencies?</code>, <code>Middleware?</code>, <code>Critical?</code>, <code>RateLimit?</code>, <code>InvokeRateLimit?</code>, <code>ThreadInit?</code>, <code>ThreadStart?</code>, plus your own fields.</td></tr>
+		<tr><td><code>Thread.ServiceDef</code> / <code>Thread.Service</code></td><td>Thread</td><td>Client entries, dependencies, middleware, remote policies, limits, and all three lifecycle hooks.</td></tr>
 		<tr><td><code>Thread.RegisterResult</code></td><td>Thread</td><td><code>{ Module: ModuleScript, Success: boolean, Result: any, Error: any }</code></td></tr>
 		<tr><td><code>Thread.Middleware</code></td><td>Thread (re-exported from Channel)</td><td><code>{ Inbound: MiddlewareList?, Outbound: MiddlewareList? }</code></td></tr>
 		<tr><td><code>Channel.MiddlewareFn</code></td><td>Channel</td><td><code>(player: Player, args: {any}) -&gt; boolean</code></td></tr>
-		<tr><td><code>Channel.WrapOptions</code></td><td>Channel</td><td><code>{ Middleware?, RateLimit?, InvokeRateLimit? }</code></td></tr>
+		<tr><td><code>Channel.WrapOptions</code></td><td>Channel</td><td>Middleware, remote policies, rate limits, payload limits, and deferred readiness.</td></tr>
+		<tr><td><code>Channel.RemotePolicy</code> / <code>Channel.RemoteError</code></td><td>Channel</td><td>Per-remote validation rules and structured Method failures.</td></tr>
 		<tr><td><code>Promise.Promise&lt;T&gt;</code></td><td>Promise</td><td>The Promise type itself.</td></tr>
 		<tr><td><code>Signal.Signal</code> / <code>Signal.Connection</code></td><td>Util/Signal</td><td>The Util Signal's own types.</td></tr>
 		<tr><td><code>Trove.Trackable</code> / <code>Trove.SignalLike</code></td><td>Util/Trove</td><td>What kinds of values <code>Trove:Add</code>/<code>:Connect</code> accept.</td></tr>
@@ -126,7 +127,7 @@
 		Wally — just <code>pcall</code> + <code>assert</code>).
 	</p>
 	<ol>
-		<li>Copy the <code>Thread/</code> and <code>Tests/</code> folders into your Rojo project (or Studio, as siblings), so <code>Tests/Thread.spec.luau</code> can reach <code>../Packages</code>.</li>
+		<li>Put the contents of <code>src/</code> under <code>ReplicatedStorage/Packages</code> and put <code>Tests/</code> under <code>ServerScriptService/Tests</code>.</li>
 		<li>Start a Play/Test session in Studio, then paste into the Command Bar:
 			<pre><code><span class="tok-func">require</span>(<span class="tok-func">game</span>.ServerScriptService.Tests[<span class="tok-string">"Thread.spec"</span>])</code></pre>
 		</li>
@@ -139,7 +140,7 @@
 	<p>You're calling <code>Thread.GetService</code> for a service that isn't registered <em>on that side</em>. If <code>X</code> is a server-only service and you're on the client, use <code>Channel.BuildClient("X")</code> instead.</p>
 
 	<h3>Remote/service marker timeout errors</h3>
-	<p><code>'&lt;Name&gt;' does not exist after waiting &lt;N&gt;s</code> / <code>Service '&lt;Name&gt;' was never wired by the server</code> — the client is waiting for a Remote/service marker the server never created. Usually a race condition (client called <code>Channel.BuildClient</code> before the server's <code>Thread.Start()</code> ran) or a misspelled service name.</p>
+	<p><code>'&lt;Name&gt;' does not exist after waiting &lt;N&gt;s</code> / <code>Service '&lt;Name&gt;' never became ready</code> means the service name is misspelled, the service has no Client table, or that service failed during server startup. <code>Channel.BuildClient</code> already waits for server readiness.</p>
 
 	<h3>A critical service's failure didn't crash my script</h3>
 	<p>That's the default, intentional behavior. Handle it via <code>Thread.Start():catch(...)</code>, or opt back into the old behavior with <code>Thread.Configure({ HaltOnCriticalFailure = true })</code>.</p>
@@ -154,13 +155,15 @@
 	<div class="table-wrap">
 	<table>
 		<tr><th>Function</th><th>Description</th></tr>
-		<tr><td><code>Thread.CreateService(def)</code></td><td>Registers a service. <code>def</code> may include <code>Client</code>, <code>Dependencies</code>, <code>Middleware</code>, <code>Critical</code>, <code>RateLimit</code>, <code>InvokeRateLimit</code>, <code>ThreadInit</code>, <code>ThreadStart</code>.</td></tr>
+		<tr><td><code>Thread.CreateService(def)</code></td><td>Registers a service, lifecycle hooks, networking rules, and dependencies.</td></tr>
 		<tr><td><code>Thread.GetService(name)</code></td><td>Returns a registered service (this side's registry) or errors.</td></tr>
 		<tr><td><code>Thread.GetServices()</code></td><td>Returns a copy of the full service registry.</td></tr>
 		<tr><td><code>Thread.Unregister(name)</code></td><td>Removes a service before <code>Start()</code>.</td></tr>
 		<tr><td><code>Thread.Register(folder, recursive?)</code></td><td>Requires every ModuleScript under <code>folder</code>; returns a results report.</td></tr>
 		<tr><td><code>Thread.Start()</code></td><td>Binds Client remotes, runs <code>ThreadInit</code> then <code>ThreadStart</code> in dependency order. Returns the start Promise.</td></tr>
-		<tr><td><code>Thread.OnStart()</code></td><td>Returns the start Promise, safe to call any time, from anywhere.</td></tr>
+		<tr><td><code>Thread.OnStart()</code></td><td>Returns an independent observer Promise for startup, safe to call any time.</td></tr>
+		<tr><td><code>Thread.Stop()</code> / <code>Thread.OnStop()</code></td><td>Stops services in reverse dependency order and destroys networking state.</td></tr>
+		<tr><td><code>Thread.GetServiceStatus(name)</code></td><td>Returns the service's current lifecycle state.</td></tr>
 		<tr><td><code>Thread.Configure({ Debug, HaltOnCriticalFailure })</code></td><td>Central configuration.</td></tr>
 		<tr><td><code>Thread.CreateSignal()</code> / <code>Thread.CreateUnreliableSignal()</code> / <code>Thread.CreateProperty(v)</code></td><td>Markers for use inside a service's <code>Client</code> table.</td></tr>
 		<tr><td><code>Thread.Version</code></td><td>Current version string.</td></tr>
@@ -175,6 +178,8 @@
 		<tr><th>Function</th><th>Description</th></tr>
 		<tr><td><code>Channel.WrapService(name, clientTable, opts?)</code></td><td>Server-only. Binds a Client table to real Remotes. Called automatically by <code>Thread.Start()</code>.</td></tr>
 		<tr><td><code>Channel.BuildClient(name, timeout?)</code></td><td>Client-only. Returns a proxy for a wrapped service.</td></tr>
+		<tr><td><code>Channel.GetServiceManifest(name)</code></td><td>Returns a copy of the exact Remote manifest.</td></tr>
+		<tr><td><code>Channel.DecodeResponse(value)</code> / <code>Channel.IsRemoteError(value)</code></td><td>Decodes service Method responses and identifies structured errors.</td></tr>
 		<tr><td><code>Channel.Destroy(name)</code></td><td>Removes every Remote created for a service.</td></tr>
 		<tr><td><code>Channel.On/FireClient/FireAll/FireServer/SetFunction/InvokeServer/InvokeClient/Event/Function</code></td><td>Low-level, string-keyed API.</td></tr>
 		<tr><td><code>Channel.Configure({...})</code></td><td>Bulk-set <code>Channel.Debug</code>, <code>Channel.DefaultRateLimit</code>, etc.</td></tr>

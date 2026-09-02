@@ -16,7 +16,7 @@
 <nav class="sidebar">
 	<div class="sidebar-brand">
 		<span class="logo">🧵 Thread</span>
-		<span class="version">v1.0.1</span>
+		<span class="version">v1.1.0</span>
 	</div>
 
 	<div class="nav-group">
@@ -65,14 +65,15 @@
 	</p>
 	<ul>
 		<li>
-			<strong>Per-player rate limiting</strong>: each Remote tracks calls per player in a
-			rolling 1-second window. Default limits are <code>Channel.DefaultRateLimit = 30</code>/sec
+			<strong>Per-player token buckets</strong>: each Remote starts with a bounded burst capacity
+			and refills continuously. Default limits are <code>Channel.DefaultRateLimit = 30</code>/sec
 			for Signals and <code>Channel.DefaultInvokeRateLimit = 20</code>/sec for Methods —
 			override per-service with <code>RateLimit</code>/<code>InvokeRateLimit</code> fields
 			on <code>Thread.CreateService({...})</code>, or globally via
-			<code>Channel.Configure({...})</code>. Calls over the limit are dropped silently
-			(server-side, with a warning logged) — the client never even knows.
+			<code>Channel.Configure({...})</code>. Signals are dropped when empty. Methods receive a
+			structured <code>RATE_LIMITED</code> error, and warning output is throttled.
 		</li>
+		<li><strong>Payload limits</strong>: wrapped calls default to 64 KiB and reject oversized, cyclic, or unsupported payloads before user handlers run.</li>
 		<li>
 			<strong><code>Channel.InvokeClient</code> timeout</strong>: server-to-client
 			<code>InvokeClient</code> calls give up after <code>Channel.InvokeClientTimeout</code>
@@ -98,6 +99,7 @@
 Channel.Configure({
     DefaultRateLimit = <span class="tok-string">60</span>,
     DefaultInvokeRateLimit = <span class="tok-string">30</span>,
+    DefaultMaxPayloadBytes = <span class="tok-string">65536</span>,
     InvokeClientTimeout = <span class="tok-string">15</span>,
     WaitTimeout = <span class="tok-string">15</span>, <span class="tok-comment">-- how long the client waits for server-created Remotes to appear</span>
 })</code></pre>

@@ -1,0 +1,36 @@
+{
+  "name": "ThreadIntegration",
+  "emitLegacyScripts": true,
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Packages": {
+        "$path": "src"
+      }
+    },
+    "ServerScriptService": {
+      "UnitTests": {
+        "$className": "Folder",
+        "Fixtures": {
+          "$path": "Tests/Fixtures"
+        },
+        "TestRunner": {
+          "$path": "Tests/TestRunner.luau"
+        },
+        "Thread.spec": {
+          "$path": "Tests/Thread.spec.luau"
+        }
+      },
+      "ThreadIntegrationServer": {
+        "$path": "Tests/Integration/Server.server.luau"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "ThreadIntegrationClient": {
+          "$path": "Tests/Integration/Client.client.luau"
+        }
+      }
+    }
+  }
+}

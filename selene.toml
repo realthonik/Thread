@@ -1,0 +1,9 @@
+std = "roblox"
+
+[config]
+empty_if = { comments_count = true }
+
+[lints]
+global_usage = "allow"
+multiple_statements = "allow"
+shadowing = "allow"

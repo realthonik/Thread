@@ -66,6 +66,7 @@ function Trove.new()
 	return setmetatable({
 		_objects = {} :: { { any } },
 		_cleaning = false,
+		_destroyed = false,
 	}, Trove)
 end
 
@@ -73,6 +74,7 @@ end
 -- Returns `object` unchanged, so this can wrap a constructor call inline.
 function Trove:Add(object: Trackable, cleanupMethod: string?): any
 	assert(not self._cleaning, "Cannot call Trove:Add while cleaning")
+	assert(not self._destroyed, "Cannot call Trove:Add after Destroy")
 
 	local method = getCleanupMethod(object, cleanupMethod)
 	table.insert(self._objects, { object, method })
@@ -118,15 +120,26 @@ end
 -- Cleans up every tracked object without destroying the trove itself - the
 -- trove can keep being used afterward.
 function Trove:Clean()
+	if self._destroyed or self._cleaning then
+		return
+	end
 	self._cleaning = true
+	local objects = self._objects
+	self._objects = {}
 
-	for _, entry in ipairs(self._objects) do
+	for _, entry in ipairs(objects) do
 		local object, method = entry[1], entry[2]
 
 		if method == "function" then
-			task.spawn(object)
+			local ok, err = pcall(object)
+			if not ok then
+				warn("[Trove] Cleanup error:", err)
+			end
 		elseif method == "thread" then
-			task.cancel(object)
+			local ok, err = pcall(task.cancel, object)
+			if not ok then
+				warn("[Trove] Cleanup error:", err)
+			end
 		else
 			local ok, err = pcall(function()
 				(object :: any)[method](object)
@@ -137,13 +150,16 @@ function Trove:Clean()
 		end
 	end
 
-	table.clear(self._objects)
 	self._cleaning = false
 end
 
 -- Cleans up every tracked object and marks the trove unusable.
 function Trove:Destroy()
+	if self._destroyed then
+		return
+	end
 	self:Clean()
+	self._destroyed = true
 end
 
 -- Returns a new Trove that will automatically be cleaned up when this trove
@@ -159,8 +175,10 @@ end
 -- game (Parent becomes nil / Destroying fires). Returns the connection.
 function Trove:AttachToInstance(instance: Instance): RBXScriptConnection
 	assert(instance:IsDescendantOf(game), "Trove:AttachToInstance expects an instance currently in the DataModel")
-	return self:Connect(instance.Destroying, function()
-		self:Destroy()
+	return self:Connect(instance.AncestryChanged, function()
+		if not instance:IsDescendantOf(game) then
+			self:Destroy()
+		end
 	end)
 end
 

@@ -16,7 +16,7 @@
 <nav class="sidebar">
 	<div class="sidebar-brand">
 		<span class="logo">🧵 Thread</span>
-		<span class="version">v1.0.1</span>
+		<span class="version">v1.1.0</span>
 	</div>
 
 	<div class="nav-group">
@@ -182,7 +182,7 @@ Thread.Start():catch(<span class="tok-keyword">function</span>(err)
 
 	<p>
 		Non-critical services that throw during <code>ThreadInit</code>/<code>ThreadStart</code>
-		just log a warning and are skipped — the rest of startup continues normally. Only mark
+		log a warning and are skipped, along with services that depend on them. Unrelated services continue normally. Only mark
 		a service <code>Critical</code> if the game genuinely can't function without it
 		(typically: your data-persistence service).
 	</p>

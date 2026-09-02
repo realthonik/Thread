@@ -1,5 +1,36 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Structured service Method failures with stable error codes, service and remote context, and reliable distinction from legitimate nil returns.
+- Built-in argument validators, per-service and per-remote payload limits, and per-remote policy overrides.
+- Promise cancellation hooks, cancellation errors and states, and configurable unhandled rejection reporting.
+- Promise-aware `ThreadInit`, `ThreadStart`, and `ThreadStop`, with reverse dependency shutdown and lifecycle status inspection.
+- Exact replicated service manifests consumed by `Channel.BuildClient`.
+- A versioned generator for package metadata, Wally metadata, service manifests, docs badges, static Luau client types, and typed `Thread.Clients` builders.
+- Rojo projects, Rokit tool pins, StyLua and Selene configuration, GitHub Actions CI, and a real server/client Studio integration suite.
+
+### Changed
+
+- Per-player rate limiting now uses continuously refilled token buckets instead of time-window arrays. Repeated warnings are throttled per player and remote.
+- Package version and release-tag validation now share `thread.config.json` as their source of truth.
+
+### Fixed
+
+- Client service proxies now wait for a completed Remote manifest and successful service lifecycle before becoming available.
+- Failed services no longer run `ThreadStart`, and services with failed dependencies are skipped.
+- Property initial synchronization is revisioned so concurrent updates cannot be missed; teardown now disconnects internal listeners.
+- Remote calls preserve nil arguments and multiple return values, including middleware transformations.
+- Per-player Properties can use nil as an explicit override value.
+- `Promise.retry` handles synchronous failures on every attempt, and settled Promises release queued callbacks.
+- Promise self-resolution, adopted-Promise settlement races, cancellation reentrancy, event-predicate failures, rate limits, and invalid configuration values now fail safely.
+- Services that fail during `ThreadStart` still receive `ThreadStop`, and cancelling a lifecycle observer cannot cancel framework startup or shutdown.
+- Service definitions, middleware, remote policies, payload limits, generated manifests, and malformed remote responses now fail early instead of being silently truncated or ignored.
+- Fixed `TimerUtil`, `TableUtil.Filter`, immutable `Option`/`EnumList` values, and destroyed `Trove` behavior.
+- Installation and test paths now match the repository's `src/` layout.
+
 ## v1.1.0
 
 ### Added

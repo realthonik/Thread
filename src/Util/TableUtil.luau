@@ -90,7 +90,12 @@ end
 -- Deep-freezes a table (and every nested table) with table.freeze.
 -- Mutates in place and returns the same table for convenience.
 function TableUtil.Lock<T>(tbl: T): T
+	local visited: { [any]: boolean } = {}
 	local function lock(t: { [any]: any })
+		if visited[t] then
+			return
+		end
+		visited[t] = true
 		for _, v in pairs(t) do
 			if type(v) == "table" and not table.isfrozen(v) then
 				lock(v)
@@ -112,6 +117,7 @@ end
 -- array order doesn't matter.
 function TableUtil.SwapRemove<T>(tbl: { T }, i: number)
 	local n = #tbl
+	assert(type(i) == "number" and i % 1 == 0 and i >= 1 and i <= n, "TableUtil.SwapRemove: index out of bounds")
 	tbl[i] = tbl[n]
 	tbl[n] = nil
 end
@@ -166,8 +172,8 @@ function TableUtil.Filter<K, V>(tbl: { [K]: V }, fn: (value: V, key: K) -> boole
 	local isArray = (#tbl > 0) or next(tbl) == nil
 
 	if isArray then
-		for _, v in ipairs(tbl :: any) do
-			if fn(v, (nil :: any) :: K) then
+		for i, v in ipairs(tbl :: any) do
+			if fn(v, (i :: any) :: K) then
 				table.insert(out :: any, v)
 			end
 		end

@@ -16,7 +16,7 @@
 <nav class="sidebar">
 	<div class="sidebar-brand">
 		<span class="logo">🧵 Thread</span>
-		<span class="version">v1.0.1</span>
+		<span class="version">v1.1.0</span>
 	</div>
 
 	<div class="nav-group">
@@ -153,13 +153,26 @@ MoneyService.Jackpot:Observe(<span class="tok-keyword">function</span>(value)
 		<li>The first time <code>Channel.luau</code> loads (server or client), it creates (or, on the client, waits for) a folder at <code>ReplicatedStorage.ThreadChannel</code>. All Remote instances live under here.</li>
 		<li>When the server calls <code>Channel.WrapService("MoneyService", clientTable, opts)</code>, for every key in <code>clientTable</code> it creates one Remote object per key, under a namespaced folder: e.g. a Method named <code>GetMoney</code> becomes a <code>RemoteFunction</code> at <code>ReplicatedStorage.ThreadChannel.RemoteFunction.MoneyService.GetMoney</code>. Namespacing by service name means two different services can both expose a method called <code>GetMoney</code> without colliding.</li>
 		<li>Every Remote gets a Roblox <strong>Attribute</strong> called <code>ThreadKind</code> set to <code>"Method"</code>, <code>"Signal"</code>, or <code>"Property"</code>. This is how the client later figures out how to wrap each Remote — pure metadata, doesn't touch Lua state at all.</li>
-		<li><code>Channel.WrapService</code> also creates one lightweight marker folder per service at <code>ReplicatedStorage.ThreadChannel.Services.&lt;ServiceName&gt;</code>. This exists purely so <code>Channel.BuildClient</code> has exactly one thing to wait on — without it, a service that only exposes Methods would never create a <code>RemoteEvent</code> folder at all, and the client would sit there waiting the full timeout for a folder that was never coming.</li>
-		<li><code>Channel.BuildClient("MoneyService")</code> on the client waits for that marker folder, then scans <code>RemoteFunction</code>/<code>RemoteEvent</code>/<code>UnreliableRemoteEvent</code> for a <code>MoneyService</code> subfolder, reads each child's <code>ThreadKind</code> attribute, and builds the appropriate wrapper.</li>
+		<li>After every Remote has been created and the service lifecycle succeeds, Thread creates a ready marker at <code>ReplicatedStorage.ThreadChannel.Services.&lt;ServiceName&gt;</code>.</li>
+		<li><code>Channel.BuildClient("MoneyService")</code> waits for that ready marker, reads its exact JSON manifest, waits for every listed Remote, and builds the appropriate wrappers. This prevents incomplete or uninitialized proxies.</li>
 	</ol>
+
+	<h2>Generated Typed Clients</h2>
 	<p>
-		None of this requires you to know service names or method names on both ends
-		independently — the server's <code>Client</code> table <em>is</em> the single source
-		of truth; the client just reads it back out of the Remote hierarchy.
+		Service contracts declared in <code>thread.config.json</code> generate a typed facade at
+		<code>Thread.Clients</code>. Use <code>Thread.Clients.InventoryService()</code> or
+		<code>Thread.Clients.BuildClient("InventoryService")</code> to receive the generated
+		method, Signal, and Property types without a manual cast. Services omitted from the
+		configuration remain available through <code>Thread.Channel.BuildClient</code> as dynamic proxies.
+	</p>
+
+	<h2>Errors, Validators, and Payload Limits</h2>
+	<p>Wrapped Methods preserve legitimate nil results. Middleware rejection, rate limiting, validation failure, oversized payloads, and handler failure each produce a structured error with a stable <code>Code</code>. Catch calls with <code>pcall</code> and check <code>Channel.IsRemoteError(errorValue)</code>.</p>
+	<p>Use a service's <code>RemotePolicies</code> table to assign <code>Arguments</code> validators, <code>AllowExtraArguments</code>, <code>RateLimit</code>, or <code>MaxPayloadBytes</code> to one Method or Signal. Built-ins are available through <code>Thread.Validators</code>.</p>
+	<p>
+		At runtime, the server's <code>Client</code> table creates the Remote hierarchy. When a
+		generated contract exists, Thread verifies that hierarchy against it before publishing
+		the service, preventing the static type and runtime API from silently diverging.
 	</p>
 
 	<div class="page-nav">

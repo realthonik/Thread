@@ -2,7 +2,7 @@
 
 A lightweight Roblox framework for building scalable games with a clean **Service Architecture**, a **typed Communication System**, and a small **Promise** implementation for startup sequencing.
 
-Based on the previous model "Wire v1.1.1. by me". This version adds typed service `Client` tables, Signals/Properties (with per-player overrides), middleware, dependency ordering, a richer Promise, and hand-written equivalents of the most-used [RbxUtil](https://github.com/Sleitnick/RbxUtil) modules (Signal, Trove, TableUtil, Option, EnumList, MathUtil, TimerUtil) — while staying **100% Roblox-native**: no Wally, no package manager, no third-party code. Every file here is plain `.luau`.
+Based on the previous model "Wire v1.1.1. by me". Thread includes service `Client` tables, Signals and Properties, middleware, dependency ordering, cancellable Promises, validation, generated client types, and hand-written equivalents of common utility modules. The runtime stays dependency-free. Wally and Rokit manifests are included for packaging and development tooling only.
 
 This document explains not just *what* each piece does, but *how it works internally* and *when to reach for it* — it's meant to be read top to bottom once, then used as a reference afterward.
 
@@ -24,7 +24,7 @@ This document explains not just *what* each piece does, but *how it works intern
 - [Util Modules — Complete Reference](#util-modules--complete-reference)
 - [Server vs. Client Cheat Sheet](#server-vs-client-cheat-sheet)
 - [Exported Luau Types](#exported-luau-types)
-- [Testing](#testing)
+- [Generation, Formatting, and Testing](#generation-formatting-and-testing)
 - [Troubleshooting](#troubleshooting)
 - [Full API Reference Tables](#full-api-reference-tables)
 
@@ -32,10 +32,11 @@ This document explains not just *what* each piece does, but *how it works intern
 
 ```
 Thread/
-├── Packages/
+├── src/                  -- copy/map this folder to ReplicatedStorage/Packages
 │   ├── Thread.luau      -- service registry + lifecycle + startup sequencing
 │   ├── Channel.luau     -- everything networking-related (RemoteEvents/Functions)
-│   ├── Promise.luau     -- async primitive used by Thread.Start()/OnStart()
+│   ├── Promise.luau     -- async primitive used by startup and shutdown
+│   ├── Generated/       -- generated metadata, runtime manifest, and typed clients
 │   └── Util/
 │       ├── Signal.luau      -- fast in-process pub/sub (no Instance overhead)
 │       ├── Trove.luau       -- cleanup/janitor helper
@@ -47,16 +48,21 @@ Thread/
 ├── Tests/
 │   ├── TestRunner.luau   -- ~30-line assert-based test runner, no TestEZ
 │   └── Thread.spec.luau  -- the actual test suite
+├── generated/            -- generated service manifest and static client types
+├── default.project.json  -- standard Rojo mapping
+├── thread.config.json    -- source of truth for versions and generated files
+├── rokit.toml            -- pinned development toolchain
+├── wally.toml            -- generated package manifest
 ├── README.md
 ├── CHANGELOG.md
 └── LICENSE
 ```
 
-Nothing here requires anything outside these files. No Wally manifest, no build step — copy `Packages/` into your game and require it.
+The runtime requires nothing outside `src/`. You can copy it directly, map it with the included Rojo project, or consume the package through Wally.
 
 ## Installation
 
-Copy the whole `Packages/` folder (including the `Util/` subfolder) into `ReplicatedStorage/Packages/`, either by dragging files into Studio directly or via a Rojo project (Rojo is optional — nothing in this codebase depends on it).
+Copy the contents of `src/` (including the `Util/` subfolder) into `ReplicatedStorage/Packages/`, either by dragging the files into Studio directly or by mapping `src` there in your Rojo project. Rojo is optional.
 
 ```
 ReplicatedStorage
@@ -115,12 +121,13 @@ end
 return MoneyService
 ```
 
-A service can optionally define two lifecycle methods, both called automatically by `Thread.Start()`:
+A service can optionally define three lifecycle methods:
 
 - **`ThreadInit(self)`** — runs first, for every service, in dependency order (see [Dependencies](#dependencies-between-services)). Use this to set up internal state and grab references to other services via `Thread.GetService(...)`. Client remotes are already bound at this point (see below), so it's safe to `:Connect()` your own signals here.
-- **`ThreadStart(self)`** — runs after **every** service has finished `ThreadInit`. Use this for logic that depends on other services already being fully initialized.
+- **`ThreadStart(self)`** — runs after the initialization phase, for services whose initialization and dependencies succeeded. Use this for logic that depends on other healthy services being fully initialized.
+- **`ThreadStop(self)`** runs during `Thread.Stop()` in reverse dependency order, so dependents stop before the services they use.
 
-This two-phase split exists specifically to avoid startup-order bugs: by the time any `ThreadStart` runs, you're guaranteed every other service's `ThreadInit` already completed.
+All three lifecycle methods may return a `Thread.Promise`. Thread waits for that Promise before moving to the next dependent service. A failed or cancelled lifecycle Promise is handled like a synchronous lifecycle error.
 
 The exact same `Thread.CreateService({...})` call works identically on the client — see [Server vs. Client Cheat Sheet](#server-vs-client-cheat-sheet) for the one thing that differs (the `Client` field).
 
@@ -160,17 +167,25 @@ end
 1. Collects every registered service and computes a dependency order (topological sort — see [Dependencies](#dependencies-between-services)).
 2. For every service with a `Client` table, calls `Channel.WrapService(...)` to bind it to real Remote instances (server-only — silently skipped/warned on the client, see [Client Table](#the-client-table-methods-signals-properties)).
 3. Calls `ThreadInit` on every service, in dependency order.
-4. Calls `ThreadStart` on every service, in dependency order (only after **all** `ThreadInit`s finished).
-5. Resolves the start `Promise` returned by `Thread.OnStart()`.
+4. Calls `ThreadStart` on every healthy service, in dependency order, after the initialization phase finishes.
+5. Publishes exact service manifests only after startup completes.
+6. Resolves the start `Promise` returned by `Thread.OnStart()`.
 
 If a service marked `Critical = true` fails at step 3 or 4, steps after it are skipped and the start `Promise` **rejects** instead of resolving (see [Critical Services](#critical-services--startup-failure)).
 
-`Thread.OnStart()` returns that same `Promise` and can be called from anywhere, any number of times, from code that isn't the one that called `Thread.Start()`:
+`Thread.OnStart()` returns an observer `Promise` for the same startup result and can be called from anywhere, any number of times, from code that isn't the one that called `Thread.Start()`. Cancelling one observer does not cancel framework startup or other observers:
 
 ```lua
 Thread.OnStart():andThen(function()
     local MoneyService = Thread.GetService("MoneyService") -- safe now, everything is started
 end):catch(warn)
+```
+
+Shutdown is Promise-based and idempotent:
+
+```lua
+Thread.Stop():await()
+-- Thread.OnStop() observes the same shutdown result after Stop has begun.
 ```
 
 Remember: **the server and the client each run their own separate copy of `Thread`.** The server's `Thread._Register`, `Thread.OnStart()`, etc. are entirely independent Lua state from the client's — they don't communicate with each other automatically. That's what `Channel` (below) is for.
@@ -269,10 +284,36 @@ Understanding this makes debugging a lot easier.
 1. The first time `Channel.luau` loads (server or client), it creates (or, on the client, waits for) a folder at `ReplicatedStorage.ThreadChannel`. All Remote instances live under here.
 2. When the server calls `Channel.WrapService("MoneyService", clientTable, opts)`, for every key in `clientTable` it creates one Remote object per key, under a namespaced folder: e.g. a `Method` named `GetMoney` becomes a `RemoteFunction` at `ReplicatedStorage.ThreadChannel.RemoteFunction.MoneyService.GetMoney`. Namespacing by service name means two different services can both expose a method called `GetMoney` without colliding.
 3. Every Remote gets a Roblox **Attribute** called `ThreadKind` set to `"Method"`, `"Signal"`, or `"Property"`. This is how the client later figures out how to wrap each Remote — it's pure metadata, doesn't touch Lua state at all.
-4. `Channel.WrapService` also creates one lightweight marker folder per service at `ReplicatedStorage.ThreadChannel.Services.<ServiceName>`. This exists purely so `Channel.BuildClient` has exactly one thing to wait on — without it, a service that (say) only exposes Methods would never create a `RemoteEvent` folder at all, and the client would sit there waiting the full timeout for a folder that was never coming.
-5. `Channel.BuildClient("MoneyService")` on the client waits for that marker folder, then scans `RemoteFunction`/`RemoteEvent`/`UnreliableRemoteEvent` for a `MoneyService` subfolder, reads each child's `ThreadKind` attribute, and builds the appropriate wrapper (a plain invoke-function for Methods, a `Signal` object for Signals, a `Property` object for Properties — pairing the RemoteEvent+RemoteFunction pair a Property needs).
+4. After every Remote has been created and the service lifecycle has completed successfully, Thread creates a ready marker at `ReplicatedStorage.ThreadChannel.Services.<ServiceName>`.
+5. `Channel.BuildClient("MoneyService")` waits for that ready marker, reads its exact JSON manifest, waits for the listed Remote instances, and builds the appropriate wrappers. This prevents clients from seeing an incomplete or uninitialized service.
 
 None of this requires you to know service names or method names on both ends independently — the server's `Client` table *is* the single source of truth; the client just reads it back out of the Remote hierarchy.
+
+Wrapped methods use a protocol envelope internally. `BuildClient` decodes successful values, including nil holes and multiple returns. Failures throw a structured table through `pcall` with `Code`, `Message`, `Service`, and `Remote` fields. Use `Channel.IsRemoteError(value)` to distinguish these failures from ordinary local errors. The low-level string API remains unchanged.
+
+### Validation and Payload Limits
+
+Every wrapped method and client-to-server Signal is capped at 64 KiB by default. Set `MaxPayloadBytes` on a service or one remote policy to change it. Policies also provide built-in validators:
+
+```lua
+local InventoryService = Thread.CreateService({
+    Name = "InventoryService",
+    MaxPayloadBytes = 8 * 1024,
+    RemotePolicies = {
+        Buy = {
+            Arguments = {
+                Thread.Validators.StringMaxLength(64),
+                Thread.Validators.Integer,
+            },
+            AllowExtraArguments = false,
+            RateLimit = 5,
+        },
+    },
+    Client = {},
+})
+```
+
+Built-ins include `Any`, `String`, `Number`, `FiniteNumber`, `Integer`, `Boolean`, `Table`, `Instance`, `Player`, `Optional(validator)`, `StringMaxLength(bytes)`, and `Array(itemValidator?, maxLength?)`.
 
 ## Dependencies Between Services
 
@@ -332,7 +373,7 @@ A middleware function receives `(player, args)` where `args` is a plain array of
 
 | On a... | `Inbound` runs when... | `Outbound` runs when... |
 |---|---|---|
-| Method | the client calls it, before your handler runs. Returning `false` means your handler never executes and the client gets `nil` back. | your handler returns, before the result is sent back to the client. Returning `false` sends `nil` instead. |
+| Method | the client calls it, before your handler runs. Returning `false` prevents execution and produces `MIDDLEWARE_REJECTED`. | your handler returns, before the result is sent back. Returning `false` produces `OUTBOUND_REJECTED`. |
 | Signal | the client fires it (received via `:Connect` on the server), before your handler runs. Returning `false` means your handler never sees that fire. | the server calls `:Fire`/`:FireAll`/`:FireExcept`, before the event actually goes out. Returning `false` silently drops that specific send. |
 | Property | — (there's no "inbound" for a Property; the client never pushes data through one) | the server calls `:Set`/`:SetFor`, before the new value is stored and broadcast. Returning `false` leaves the property's value completely unchanged. |
 
@@ -362,13 +403,14 @@ If you'd rather have the old, harder failure mode (immediately `error()`, killin
 Thread.Configure({ HaltOnCriticalFailure = true })
 ```
 
-Non-critical services that throw during `ThreadInit`/`ThreadStart` just log a warning and are skipped — the rest of startup continues normally. Only mark a service `Critical` if the game genuinely can't function without it (typically: your data-persistence service).
+Non-critical services that throw during `ThreadInit`/`ThreadStart` log a warning and are skipped. Services depending on them are skipped too, while unrelated services continue normally. Only mark a service `Critical` if the game genuinely can't function without it (typically: your data-persistence service).
 
 ## Rate Limiting & Timeouts
 
 Two protections apply automatically to every Client method/Signal (and to the low-level `Channel.On`/`SetFunction`), without you having to configure anything:
 
-- **Per-player rate limiting**: each Remote tracks calls per player in a rolling 1-second window. Default limits are `Channel.DefaultRateLimit = 30`/sec for Signals and `Channel.DefaultInvokeRateLimit = 20`/sec for Methods — override per-service with `RateLimit`/`InvokeRateLimit` fields on `Thread.CreateService({...})`, or globally via `Channel.Configure({...})`. Calls over the limit are dropped silently (server-side, with a warning logged) — the client never even knows.
+- **Per-player token buckets**: each Remote has a burst capacity equal to its calls-per-second limit and refills continuously. Defaults are 30 for Signals and 20 for Methods. Override a service or one `RemotePolicies` entry. Signal calls over the limit are dropped; Method calls receive a structured `RATE_LIMITED` error. Repeated warnings are throttled per player and remote.
+- **Payload limits**: `Channel.DefaultMaxPayloadBytes = 65536` applies to inbound arguments and wrapped Method responses. Unsupported values, cycles, and nesting beyond 32 levels are rejected before handlers run.
 - **`Channel.InvokeClient` timeout**: server-to-client `InvokeClient` calls give up after `Channel.InvokeClientTimeout` seconds (default 10) instead of hanging forever if the client is unresponsive or disconnects mid-call.
 
 There is currently **no** timeout on client-to-server `InvokeServer` calls (i.e. calling a `Client` Method from the client) — that's standard Roblox behavior, not something Thread adds protection for. If you need one, wrap the call: `Promise.new(function(resolve) resolve(MyService:SomeMethod()) end):timeout(5)`.
@@ -384,6 +426,7 @@ Thread.Configure({
 Channel.Configure({
     DefaultRateLimit = 60,
     DefaultInvokeRateLimit = 30,
+    DefaultMaxPayloadBytes = 65536,
     InvokeClientTimeout = 15,
     WaitTimeout = 15,                 -- how long the client waits for server-created folders/Remotes to appear
 })
@@ -431,14 +474,16 @@ Reach for the `Client` table approach first; use this low-level API when a full 
 | `promise:finally(callback)` | Runs `callback()` regardless of outcome, then passes the original result/error through. |
 | `promise:timeout(seconds, err?)` | Rejects if `promise` hasn't settled within `seconds`. Doesn't cancel the underlying work, just stops waiting for it. |
 | `promise:await()` | Yields the current thread until settled; returns the value or `error()`s with the rejection reason. Only call this from a thread that's safe to yield (i.e. not directly in certain Roblox callback contexts that disallow yielding). |
-| `promise:getState()` | Returns `"Pending"`, `"Resolved"`, or `"Rejected"`. |
+| `promise:getState()` | Returns `"Pending"`, `"Resolved"`, `"Rejected"`, or `"Cancelled"`. |
+| `promise:cancel(reason?)` | Cancels pending work, runs registered cleanup callbacks, and reports whether cancellation happened. |
 
 ### Static constructors
 
 | Function | When to use it |
 |---|---|
-| `Promise.new(function(resolve, reject) ... end)` | Wrap any async operation manually. |
+| `Promise.new(function(resolve, reject, onCancel) ... end)` | Wrap async work and optionally register cancellation cleanup. |
 | `Promise.resolve(value)` / `Promise.reject(err)` | Build an already-settled promise. |
+| `Promise.cancelled(reason?)` | Build a cancelled Promise. |
 | `Promise.all({...})` | Every promise must succeed; one failure rejects the whole batch immediately. |
 | `Promise.allSettled({...})` | Run several things, never reject — get a per-entry `{Status, Value}`/`{Status, Error}` report. Good for "start everything, tell me what failed." |
 | `Promise.race({...})` | Settles with whichever promise finishes first (success or failure). |
@@ -447,6 +492,8 @@ Reach for the `Client` table approach first; use this low-level API when a full 
 | `Promise.retry(fn, attempts)` | Calls `fn()` (must return a promise) up to `attempts` times, stopping at the first success. |
 | `Promise.fromEvent(signal, predicate?)` | Wraps any `RBXScriptSignal` (or a `Thread.Signal`) into a one-shot promise that resolves the next time it fires. Optional `predicate(...)` to filter which firings count. |
 | `Promise.is(value)` | `true` if `value` is a Promise instance. |
+| `Promise.isCancelledError(value)` | Distinguishes cancellation from ordinary rejection. |
+| `Promise.setUnhandledRejectionHandler(fn?)` | Installs reporting for rejected Promises with no observer. Pass nil to restore warnings. |
 
 ### Common patterns
 
@@ -665,11 +712,12 @@ local MoneyService = Thread.CreateService(def)
 
 | Type | From | Shape |
 |---|---|---|
-| `Thread.ServiceDef` / `Thread.Service` | `Thread` | The table shape accepted by `Thread.CreateService`: `Name`, `Client?`, `Dependencies?`, `Middleware?`, `Critical?`, `RateLimit?`, `InvokeRateLimit?`, `ThreadInit?`, `ThreadStart?`, plus any of your own fields/methods. |
+| `Thread.ServiceDef` / `Thread.Service` | `Thread` | Includes the Client table, dependencies, middleware, remote policies, limits, and all three lifecycle hooks. |
 | `Thread.RegisterResult` | `Thread` | One entry of what `Thread.Register(...)` returns: `{ Module: ModuleScript, Success: boolean, Result: any, Error: any }`. |
 | `Thread.Middleware` | `Thread` (re-exported from `Channel`) | `{ Inbound: MiddlewareList?, Outbound: MiddlewareList? }`. |
-| `Channel.MiddlewareFn` | `Channel` | `(player: Player, args: {any}) -> boolean` — the shape a single middleware function must match. |
-| `Channel.WrapOptions` | `Channel` | What `Channel.WrapService`'s third argument accepts: `{ Middleware?, RateLimit?, InvokeRateLimit? }`. |
+| `Channel.MiddlewareFn` | `Channel` | `(player: Player?, args: {any}) -> boolean` — the shape a single middleware function must match. `player` is nil for broadcasts. |
+| `Channel.WrapOptions` | `Channel` | Middleware, policies, rate limits, payload limits, and deferred readiness options. |
+| `Channel.RemotePolicy` / `Channel.RemoteError` | `Channel` | Validation rules for one remote and the structured Method failure shape. |
 | `Promise.Promise<T>` | `Promise` | The Promise type itself, if you want to type a function as returning one: `function fetchData(): Promise.Promise<string>`. |
 | `Signal.Signal` / `Signal.Connection` | `Util/Signal` | The Util Signal's own types. |
 | `Trove.Trackable` / `Trove.SignalLike` | `Util/Trove` | What kinds of values `Trove:Add`/`:Connect` accept. |
@@ -678,11 +726,68 @@ local MoneyService = Thread.CreateService(def)
 
 You'll rarely need most of these explicitly — Luau infers types from the values you pass in most of the time — but they're there for the cases where you want to annotate a variable ahead of assigning it, or write a helper function that accepts/returns one of these.
 
-## Testing
+## Generation, Formatting, and Testing
+
+`thread.config.json` is the source for package metadata, the runtime version, docs badges, Wally metadata, the service manifest, and generated client types. Add service signatures under its `services` object, then regenerate:
+
+```bash
+python scripts/generate.py
+python scripts/generate.py --check
+```
+
+`generated/ClientTypes.luau` gives tooling a standalone copy of the static service shapes. The generated runtime facade is available directly through `Thread.Clients`, so configured services do not require a manual cast:
+
+```lua
+local Thread = require(ReplicatedStorage.Packages.Thread)
+
+local inventory = Thread.Clients.InventoryService()
+local sameInventory = Thread.Clients.BuildClient("InventoryService")
+```
+
+Both variables above have the generated `InventoryService` contract. Services omitted from `thread.config.json` remain available through the dynamic `Thread.Channel.BuildClient` API. CI also checks that a release tag exactly matches `v<package.version>`.
+
+Service definitions use this shape:
+
+```json
+{
+  "services": {
+    "InventoryService": {
+      "methods": {
+        "GetItems": {
+          "arguments": [],
+          "returns": ["{ Item }"]
+        }
+      },
+      "signals": {
+        "ItemAdded": ["item: Item"],
+        "PositionChanged": {
+          "arguments": ["position: Vector3"],
+          "unreliable": true
+        }
+      },
+      "properties": {
+        "Capacity": "number"
+      }
+    }
+  }
+}
+```
+
+At server startup, configured services must be registered and their actual `Client` members must match the generated runtime manifest. This prevents generated types from silently lying about the remotes that exist. Services omitted from the config remain dynamic for backward compatibility.
+
+Install the pinned toolchain with Rokit and run the static checks:
+
+```bash
+rokit install
+stylua --check src Tests generated
+selene src Tests generated
+rojo build default.project.json --output build/ThreadTests.rbxlx
+rojo build integration.project.json --output build/ThreadIntegration.rbxlx
+```
 
 A tiny, dependency-free test runner lives under `Tests/` (no TestEZ, no Wally — just `pcall` + `assert`).
 
-1. Copy the `Thread/` and `Tests/` folders into your Rojo project (or Studio, as siblings), so `Tests/Thread.spec.luau` can reach `../Packages`.
+1. Put the contents of `src/` under `ReplicatedStorage/Packages` and put `Tests/` under `ServerScriptService/Tests`.
 2. Start a Play/Test session in Studio (so `RunService:IsServer()` evaluates as true — some tests are server-only), then paste into the Command Bar:
    ```lua
    require(game.ServerScriptService.Tests["Thread.spec"])
@@ -690,15 +795,22 @@ A tiny, dependency-free test runner lives under `Tests/` (no TestEZ, no Wally �
    (adjust the path to wherever you placed `Tests/`)
 3. Read the Output window — `[PASS]`/`[FAIL]` per test case, with a summary line at the end.
 
-The suite covers: Promise (including all the extras), dependency ordering and circular-dependency detection, `Thread.Register`, `Channel.WrapService`/`BuildClient`/`Destroy`, per-player Property overrides, and every Util module.
+The unit suite covers Promises, lifecycle ordering and failure propagation, server-side Channel behavior, Properties, validation, structured errors, and utilities. `Tests/Integration` is a real Play-mode server/client test. It calls `Channel.BuildClient`, checks method tuples and structured failures, round-trips a Signal, replicates a Property, and shuts down Thread.
+
+```bash
+rojo build integration.project.json --output build/ThreadIntegration.rbxlx
+./scripts/run_studio_tests.ps1
+```
+
+The GitHub workflow always runs generation, formatting, linting, manifest, and Rojo build checks. Its Studio job requires a self-hosted Windows runner labeled `roblox-studio` and repository variable `RUN_ROBLOX_INTEGRATION=true`, because hosted runners do not include Roblox Studio.
 
 ## Troubleshooting
 
 **`No service named 'X' is registered` (thrown by `Thread.GetService`)**
 You're calling `Thread.GetService` for a service that isn't registered *on that side*. If `X` is a server-only service and you're on the client, use `Channel.BuildClient("X")` instead. If it's the same side, make sure the module was actually required (check `Thread.Register`'s folder path and its returned report for a `Success = false` entry).
 
-**`'<Name>' (<Class>) does not exist after waiting <N>s. Did the server register it?` / `Service '<Name>' was never wired by the server`**
-The client is waiting for a Remote/service marker the server never created. Usually means: the server's `Thread.Start()` hasn't run yet (race condition — make sure your client code waits on `Thread.OnStart()` before calling `Channel.BuildClient`), the service name is misspelled, or the service genuinely has no `Client` table on the server.
+**`'<Name>' (<Class>) does not exist after waiting <N>s` / `Service '<Name>' never became ready`**
+The client is waiting for a service ready marker the server never created. Usually this means the service name is misspelled, the service has no `Client` table, or that service failed during server startup. `Channel.BuildClient` already waits for server readiness; the client's own `Thread.OnStart()` only tracks client-side controllers and does not represent server startup.
 
 **`Thread.Register expects an Instance (folder)` / similar type-assert errors**
 These are intentional `assert()`s catching a wrong argument type immediately, rather than failing mysteriously later. Read the message — it names exactly what was expected.
@@ -717,16 +829,20 @@ Two different `ModuleScript`s called `Thread.CreateService({ Name = "X" })` with
 ### `Thread`
 | Function | Description |
 |---|---|
-| `Thread.CreateService(def)` | Registers a service. `def` may include `Client`, `Dependencies`, `Middleware`, `Critical`, `RateLimit`, `InvokeRateLimit`, `ThreadInit`, `ThreadStart`. |
+| `Thread.CreateService(def)` | Registers a service, lifecycle hooks, networking rules, and dependencies. |
 | `Thread.GetService(name)` | Returns a registered service (from this side's registry) or errors. |
 | `Thread.GetServices()` | Returns a copy of the full service registry. |
 | `Thread.Unregister(name)` | Removes a service before `Start()`. |
 | `Thread.Register(folder, recursive?)` | Requires every `ModuleScript` under `folder`; returns `{ Module, Success, Result, Error }[]`. |
 | `Thread.Start()` | Binds Client remotes, runs `ThreadInit` then `ThreadStart` in dependency order. Returns the start `Promise`. |
-| `Thread.OnStart()` | Returns the start `Promise` (resolves/rejects once, safe to call any time, from anywhere). |
+| `Thread.OnStart()` | Returns an independent observer `Promise` for startup, safe to call any time. |
+| `Thread.Stop()` / `Thread.OnStop()` | Stops services in reverse dependency order and destroys networking state. |
+| `Thread.GetServiceStatus(name)` | Returns the current lifecycle state of a registered service. |
 | `Thread.Configure({ Debug, HaltOnCriticalFailure })` | Central configuration. |
 | `Thread.CreateSignal()` / `Thread.CreateUnreliableSignal()` / `Thread.CreateProperty(v)` | Markers for use inside a service's `Client` table. |
 | `Thread.Version` | Current version string. |
+| `Thread.Metadata` / `Thread.GeneratedServiceManifest` | Generated package metadata and runtime service contracts. |
+| `Thread.Clients` | Generated typed client builders for configured services. |
 | `Thread.Channel` | Direct access to the `Channel` module. |
 | `Thread.Signal` / `.Trove` / `.TableUtil` / `.Option` / `.EnumList` / `.MathUtil` / `.TimerUtil` | Direct access to the Util modules. |
 
@@ -735,6 +851,8 @@ Two different `ModuleScript`s called `Thread.CreateService({ Name = "X" })` with
 |---|---|
 | `Channel.WrapService(name, clientTable, opts?)` | Server-only. Binds a `Client` table to real Remotes. Called automatically by `Thread.Start()` for services with a `Client` field. |
 | `Channel.BuildClient(name, timeout?)` | Client-only. Returns a proxy for a wrapped service. |
+| `Channel.GetServiceManifest(name)` | Returns a copy of the exact server-side remote manifest. |
+| `Channel.DecodeResponse(value)` / `Channel.IsRemoteError(value)` | Decodes wrapped Method responses and identifies structured failures. |
 | `Channel.Destroy(name)` | Removes every Remote created for a service. |
 | `Channel.On/FireClient/FireAll/FireServer/SetFunction/InvokeServer/InvokeClient/Event/Function` | Low-level, string-keyed API (unchanged from v1.x). |
 | `Channel.Configure({...})` | Bulk-set `Channel.Debug`, `Channel.DefaultRateLimit`, etc. |

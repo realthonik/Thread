@@ -16,7 +16,7 @@
 <nav class="sidebar">
 	<div class="sidebar-brand">
 		<span class="logo">🧵 Thread</span>
-		<span class="version">v1.0.1</span>
+		<span class="version">v1.1.0</span>
 	</div>
 
 	<div class="nav-group">
@@ -54,7 +54,7 @@
 	<h1>Services &amp; Lifecycle</h1>
 	<p class="lede">
 		A Service is a plain Lua table describing one feature of your game. This page covers
-		defining one, its two-phase lifecycle, and how <code>Thread.Register</code>/<code>Thread.Start</code>
+		defining one, its asynchronous lifecycle, and how <code>Thread.Register</code>/<code>Thread.Start</code>
 		bring everything up.
 	</p>
 
@@ -78,8 +78,8 @@
 
 <span class="tok-keyword">return</span> MoneyService</code></pre>
 
-	<h2>The Two-Phase Lifecycle</h2>
-	<p>A service can optionally define two lifecycle methods, both called automatically by <code>Thread.Start()</code>:</p>
+	<h2>The Lifecycle</h2>
+	<p>A service can define three lifecycle methods. Each may return a Promise, which Thread awaits before continuing:</p>
 	<ul>
 		<li>
 			<strong><code>ThreadInit(self)</code></strong> — runs first, for every service, in
@@ -89,15 +89,16 @@
 			so it's safe to <code>:Connect()</code> your own signals here.
 		</li>
 		<li>
-			<strong><code>ThreadStart(self)</code></strong> — runs after <strong>every</strong>
-			service has finished <code>ThreadInit</code>. Use this for logic that depends on
-			other services already being fully initialized.
+			<strong><code>ThreadStart(self)</code></strong> — runs after the initialization
+			phase for services whose initialization and dependencies succeeded. Use this
+			for logic that depends on other healthy services being fully initialized.
 		</li>
+		<li><strong><code>ThreadStop(self)</code></strong> runs during <code>Thread.Stop()</code> in reverse dependency order.</li>
 	</ul>
 	<p>
 		This two-phase split exists specifically to avoid startup-order bugs: by the time any
-		<code>ThreadStart</code> runs, you're guaranteed every other service's
-		<code>ThreadInit</code> already completed.
+		<code>ThreadStart</code> runs, every healthy service has completed
+		<code>ThreadInit</code>. Failed services and their dependents are skipped.
 	</p>
 
 	<div class="callout">
@@ -144,8 +145,8 @@ Thread.Start():catch(<span class="tok-func">warn</span>)</code></pre>
 		<li>Collects every registered service and computes a dependency order (topological sort).</li>
 		<li>For every service with a <code>Client</code> table, calls <code>Channel.WrapService(...)</code> to bind it to real Remote instances (server-only).</li>
 		<li>Calls <code>ThreadInit</code> on every service, in dependency order.</li>
-		<li>Calls <code>ThreadStart</code> on every service, in dependency order (only after <strong>all</strong> <code>ThreadInit</code>s finished).</li>
-		<li>Resolves the start <code>Promise</code> returned by <code>Thread.OnStart()</code>.</li>
+		<li>Calls <code>ThreadStart</code> on every healthy service, in dependency order, after the initialization phase finishes.</li>
+		<li>Publishes the exact client manifest and resolves the Promise returned by <code>Thread.OnStart()</code>.</li>
 	</ol>
 	<p>
 		If a service marked <code>Critical = true</code> fails at step 3 or 4, steps after it
@@ -154,14 +155,17 @@ Thread.Start():catch(<span class="tok-func">warn</span>)</code></pre>
 	</p>
 
 	<p>
-		<code>Thread.OnStart()</code> returns that same <code>Promise</code> and can be called
-		from anywhere, any number of times, from code that isn't the one that called
-		<code>Thread.Start()</code>:
+		<code>Thread.OnStart()</code> returns an independent observer <code>Promise</code>
+		for the same result and can be called from anywhere, any number of times.
+		Cancelling one observer does not cancel startup or other observers:
 	</p>
 
 	<pre><code>Thread.OnStart():andThen(<span class="tok-keyword">function</span>()
     <span class="tok-keyword">local</span> MoneyService = Thread.GetService(<span class="tok-string">"MoneyService"</span>) <span class="tok-comment">-- safe now, everything is started</span>
 <span class="tok-keyword">end</span>):catch(<span class="tok-func">warn</span>)</code></pre>
+
+	<pre><code><span class="tok-comment">-- Dependents stop before their dependencies.</span>
+Thread.Stop():await()</code></pre>
 
 	<div class="callout warn">
 		<div class="callout-title">The most important thing to internalize</div>

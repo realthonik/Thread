@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: paradoxum-games/setup-rokit@v3
+        with:
+          version: 1.2.0
+          cache: true
+      - name: Check generated sources and release tag
+        run: python3 scripts/generate.py --check
+      - name: Check generator syntax
+        run: python3 -m py_compile scripts/generate.py scripts/test_generate.py
+      - name: Test generator
+        run: python3 scripts/test_generate.py
+      - name: Check formatting
+        run: stylua --check src Tests generated
+      - name: Lint
+        run: selene src Tests generated
+      - name: Validate package manifest
+        run: wally manifest-to-json
+      - name: Create build directory
+        run: mkdir -p build
+      - name: Build unit-test place
+        run: rojo build default.project.json --output build/ThreadTests.rbxlx
+      - name: Build integration-test place
+        run: rojo build integration.project.json --output build/ThreadIntegration.rbxlx
+
+  studio-integration:
+    if: ${{ vars.RUN_ROBLOX_INTEGRATION == 'true' }}
+    runs-on: [self-hosted, Windows, roblox-studio]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: paradoxum-games/setup-rokit@v3
+        with:
+          version: 1.2.0
+          cache: true
+      - run: New-Item -ItemType Directory -Force -Path build
+      - run: rojo build integration.project.json --output build/ThreadIntegration.rbxlx
+      - run: ./scripts/run_studio_tests.ps1
