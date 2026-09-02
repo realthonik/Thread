@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Thread — a lightweight Roblox service framework</title>
-<meta name="description" content="Thread is a lightweight, dependency-free Roblox framework for services, typed networking, and Promises.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧵</text></svg>">
+<meta name="description" content="Thread is a lightweight Roblox framework for services, typed networking, and predictable startup.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%236e56cf%22/><path d=%22M17 17h30v9H36v21h-9V26H17z%22 fill=%22white%22/></svg>">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -15,8 +15,9 @@
 
 <nav class="sidebar">
 	<div class="sidebar-brand">
-		<span class="logo">🧵 Thread</span>
-		<span class="version">v1.1.0</span>
+		<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+		<span class="brand-wordmark">Thread</span>
+		<span class="version">v2.0.0</span>
 	</div>
 
 	<div class="nav-group">
@@ -48,49 +49,45 @@
 <div class="sidebar-backdrop"></div>
 
 <main>
-<div class="content">
+<div class="content home-content">
+	<section class="home-hero">
+		<div class="home-hero-copy">
+			<div class="home-kicker"><span></span> Thread 2.0 for Roblox</div>
+			<h1>Build the server.<br><em>Keep the wiring quiet.</em></h1>
+			<p>Thread is a small, strict-Luau framework for services, typed client APIs, and predictable startup. It handles the plumbing so your game code can stay focused.</p>
+			<div class="home-actions"><a class="button button-primary" href="installation.html">Get started <span>→</span></a><a class="button button-quiet" href="https://github.com/realthonik/Thread" target="_blank" rel="noopener">View source <span>↗</span></a></div>
+			<div class="home-tags" aria-label="Framework highlights"><span>Roblox-native</span><span>Wally package included</span><span>Strict Luau</span></div>
+		</div>
+		<div class="home-schematic" aria-label="Thread service flow">
+			<div class="schematic-topline"><span>THREAD</span><span>READY</span></div>
+			<div class="schematic-node node-service"><span class="node-dot"></span><div><b>MoneyService</b><small>server service</small></div><code>01</code></div>
+			<div class="schematic-line"><i></i><span>Client contract</span></div>
+			<div class="schematic-node node-client"><span class="node-dot"></span><div><b>MoneyService</b><small>typed client proxy</small></div><code>02</code></div>
+			<div class="schematic-events"><span>GetMoney()</span><span>MoneyChanged</span><span>Jackpot</span></div>
+		</div>
+	</section>
 
-	<div class="badges">
-		<span class="badge">100% Roblox-native</span>
-		<span class="badge">No Wally / no dependencies</span>
-		<span class="badge">--!strict Luau</span>
-	</div>
+	<section class="home-principles" aria-label="What Thread provides">
+		<div><strong>Services</strong><span>Keep server logic structured and discoverable.</span></div>
+		<div><strong>Client contracts</strong><span>Expose methods, signals, and properties without remote boilerplate.</span></div>
+		<div><strong>Lifecycle control</strong><span>Initialize dependencies first, then start in a known order.</span></div>
+	</section>
 
-	<div class="eyebrow">Thread</div>
-	<h1>A lightweight service framework for Roblox</h1>
-	<p class="lede">
-		A clean Service Architecture, a typed Communication System, and a small Promise
-		implementation for startup sequencing — every file is plain, hand-written
-		<code>.luau</code>. No Wally, no package manager, no third-party code.
-	</p>
+	<section class="home-section">
+		<div class="section-heading"><span>01</span><div><p class="eyebrow">The idea</p><h2>One service table, one public contract.</h2></div></div>
+		<p class="home-intro">Define server behavior and the client surface in the same place. Thread builds the connection, including rate limits and invoke timeouts, instead of leaving a tangle of remote instances behind.</p>
+		<div class="home-note"><span>Client</span><p>The server's <code>Client</code> table is the API the client receives. No string-matching two ends by hand.</p></div>
+	</section>
 
-	<h2>Why Thread</h2>
-	<p>
-		Thread lets you define <strong>services</strong> (server) and <strong>controllers</strong>
-		(client) with a two-phase lifecycle, then expose typed methods, signals, and
-		properties to clients without manually wiring up a single <code>RemoteEvent</code>.
-		The server's <code>Client</code> table <em>is</em> the API the client gets back —
-		no string-matching two ends by hand.
-	</p>
-
-	<div class="callout">
-		<div class="callout-title">In one line</div>
-		Similar shape to Knit (services, <code>Client</code> tables, Promise-based startup),
-		but with built-in rate limiting, invoke timeouts, dependency ordering, and zero
-		external dependencies — see the
-		<a href="https://github.com/realthonik/Thread/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a>
-		for the full version history.
-	</div>
-
-	<h2>Quick Start</h2>
-	<pre><code><span class="tok-comment">-- ServerScriptService/Server.server.lua</span>
-<span class="tok-keyword">local</span> Thread = <span class="tok-func">require</span>(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ReplicatedStorage"</span>).Packages.Thread)
+	<section class="home-section home-start">
+		<div class="section-heading"><span>02</span><div><p class="eyebrow">Quick start</p><h2>Register, then start.</h2></div></div>
+		<div class="home-code-grid"><div class="home-code-panel"><div class="code-panel-label">ServerScriptService/Server.server.lua</div>
+	<pre><code><span class="tok-keyword">local</span> Thread = <span class="tok-func">require</span>(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ReplicatedStorage"</span>).Packages.Thread)
 
 Thread.Register(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ServerScriptService"</span>).Services)
-Thread.Start():catch(<span class="tok-func">warn</span>)</code></pre>
+Thread.Start():catch(<span class="tok-func">warn</span>)</code></pre></div>
 
-<pre><code><span class="tok-comment">-- ServerScriptService/Services/MoneyService.luau</span>
-<span class="tok-keyword">local</span> Thread = <span class="tok-func">require</span>(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ReplicatedStorage"</span>).Packages.Thread)
+<div class="home-code-panel"><div class="code-panel-label">Services/MoneyService.luau</div><pre><code><span class="tok-keyword">local</span> Thread = <span class="tok-func">require</span>(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ReplicatedStorage"</span>).Packages.Thread)
 
 <span class="tok-keyword">local</span> MoneyService = Thread.CreateService({
     Name = <span class="tok-string">"MoneyService"</span>,
@@ -109,41 +106,44 @@ Thread.Start():catch(<span class="tok-func">warn</span>)</code></pre>
     <span class="tok-keyword">return</span> balances[player] <span class="tok-keyword">or</span> <span class="tok-string">0</span>
 <span class="tok-keyword">end</span>
 
-<span class="tok-keyword">return</span> MoneyService</code></pre>
+<span class="tok-keyword">return</span> MoneyService</code></pre></div></div>
 
-	<p>
-		That's it — <code>Channel.BuildClient("MoneyService")</code> on the client gets back
-		a proxy with a <code>:GetMoney()</code> method, a connectable <code>MoneyChanged</code>
-		signal, and an observable <code>Jackpot</code> property, automatically.
-	</p>
+	<p class="home-after-code">On the client, <code>Channel.BuildClient("MoneyService")</code> returns a proxy with <code>:GetMoney()</code>, a connectable <code>MoneyChanged</code> signal, and an observable <code>Jackpot</code> property.</p>
+	</section>
 
-	<h2>Explore the docs</h2>
+	<section class="home-section home-explore">
+		<div class="section-heading"><span>03</span><div><p class="eyebrow">Documentation</p><h2>Go straight to the useful part.</h2></div></div>
 	<div class="card-grid">
 		<a class="card" href="installation.html">
-			<div class="card-title">Installation &amp; Anatomy →</div>
-			<p class="card-desc">Copy the Packages folder in, understand what each file does.</p>
+			<div class="card-title">Installation &amp; Anatomy <span>→</span></div>
+			<p class="card-desc">Copy the Packages folder in and understand what each file does.</p>
 		</a>
 		<a class="card" href="services.html">
-			<div class="card-title">Services &amp; Lifecycle →</div>
-			<p class="card-desc">ThreadInit/ThreadStart, Register, Start, and how startup works.</p>
+			<div class="card-title">Services &amp; Lifecycle <span>→</span></div>
+			<p class="card-desc">ThreadInit, ThreadStart, Register, Start, and startup flow.</p>
 		</a>
 		<a class="card" href="client-table.html">
-			<div class="card-title">Client Table &amp; Networking →</div>
-			<p class="card-desc">Methods, Signals, Properties — and how the wiring works under the hood.</p>
+			<div class="card-title">Client APIs &amp; Networking <span>→</span></div>
+			<p class="card-desc">Methods, signals, properties, and the wiring underneath.</p>
 		</a>
 		<a class="card" href="dependencies-middleware.html">
-			<div class="card-title">Dependencies &amp; Middleware →</div>
+			<div class="card-title">Dependencies &amp; Middleware <span>→</span></div>
 			<p class="card-desc">Service ordering, request validation, and critical-failure handling.</p>
 		</a>
 		<a class="card" href="promise.html">
-			<div class="card-title">Promise →</div>
-			<p class="card-desc">A+-ish async primitive: race, some, retry, timeout, fromEvent, and more.</p>
+			<div class="card-title">Promise <span>→</span></div>
+			<p class="card-desc">Race, retry, timeout, fromEvent, and the rest of the async tools.</p>
 		</a>
-		<a class="card" href="utilities.html">
-			<div class="card-title">Util Modules →</div>
-			<p class="card-desc">Signal, Trove, TableUtil, Option, EnumList, MathUtil, TimerUtil — hand-written, RbxUtil-inspired.</p>
-		</a>
-	</div>
+			<a class="card" href="utilities.html">
+				<div class="card-title">Util Modules <span>→</span></div>
+				<p class="card-desc">Signals, cleanup, tables, options, enums, math, and timers.</p>
+			</a>
+			<a class="card" href="reference.html">
+				<div class="card-title">Cheat Sheet &amp; API Tables <span>→</span></div>
+				<p class="card-desc">A compact reference for types, methods, and configuration options.</p>
+			</a>
+		</div>
+	</section>
 
 	<div class="page-nav">
 		<span></span>
