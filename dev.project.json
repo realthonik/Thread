@@ -1,0 +1,19 @@
+{
+  "name": "ThreadDev",
+  "emitLegacyScripts": true,
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Packages": {
+        "Thread": {
+          "$path": "src"
+        }
+      }
+    },
+    "ServerScriptService": {
+      "Tests": {
+        "$path": "Tests"
+      }
+    }
+  }
+}
