@@ -54,14 +54,13 @@
 	<div class="eyebrow">Get Started</div>
 	<h1>Installation &amp; Project Anatomy</h1>
 	<p class="lede">
-		The runtime has no third-party dependencies. Copy <code>src/</code> directly, use the
-		included Rojo mappings, or consume the generated Wally package manifest.
+		The runtime has no third-party dependencies. Install Thread with Wally for the simplest setup, or copy the package manually if you are not using Wally.
 	</p>
 
 	<h2>Project Anatomy</h2>
 	<pre><code>Thread/
 ├── src/                  <span class="tok-comment">-- copy/map this to ReplicatedStorage/Packages</span>
-│   ├── Thread.luau      <span class="tok-comment">-- service registry + lifecycle + startup sequencing</span>
+│   ├── init.luau        <span class="tok-comment">-- Wally/Rojo package root + lifecycle</span>
 │   ├── Channel.luau     <span class="tok-comment">-- everything networking-related (RemoteEvents/Functions)</span>
 │   ├── Promise.luau     <span class="tok-comment">-- async primitive used by Thread.Start()/OnStart()</span>
 │   ├── Generated/       <span class="tok-comment">-- generated package metadata</span>
@@ -77,7 +76,8 @@
 │   ├── TestRunner.luau   <span class="tok-comment">-- ~30-line assert-based test runner, no TestEZ</span>
 │   └── Thread.spec.luau  <span class="tok-comment">-- the actual test suite</span>
 ├── generated/            <span class="tok-comment">-- service manifest and static client types</span>
-├── default.project.json  <span class="tok-comment">-- Rojo test-place mapping</span>
+├── default.project.json  <span class="tok-comment">-- published package model</span>
+├── dev.project.json      <span class="tok-comment">-- local development/test place</span>
 ├── integration.project.json
 ├── thread.config.json    <span class="tok-comment">-- version and generation source</span>
 ├── rokit.toml
@@ -87,35 +87,40 @@
 └── LICENSE</code></pre>
 
 	<h2>Installation</h2>
-	<p>
-		Copy the contents of <code>src/</code> (including the <code>Util/</code>
-		subfolder) into <code>ReplicatedStorage/Packages/</code>, either by dragging files
-		into Studio directly or by mapping <code>src</code> there in a Rojo project.
-		Rojo is optional.
-	</p>
+	<h3>Wally (recommended)</h3>
+	<p>Add Thread to your game's <code>wally.toml</code>:</p>
+	<pre><code>[dependencies]
+Thread = "realthonik/thread@2.0.0"</code></pre>
+	<p>Run <code>wally install</code>, then map Wally's <code>Packages</code> directory into <code>ReplicatedStorage.Packages</code> with Rojo.</p>
+	<pre><code>"ReplicatedStorage": {
+  "Packages": {
+    "$path": "Packages"
+  }
+}</code></pre>
+	<p>Thread is then available as:</p>
+	<pre><code>local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Thread = require(ReplicatedStorage.Packages.Thread)</code></pre>
+	<div class="callout">
+		<div class="callout-title">That's it</div>
+		Thread has no runtime dependencies of its own. Wally installs the package and Rojo mounts it as a single <code>Thread</code> ModuleScript.
+	</div>
 
+	<h3>Manual installation</h3>
+	<p>If you are not using Wally, preserve the package hierarchy under a ModuleScript named <code>Thread</code>:</p>
 	<pre><code>ReplicatedStorage
 └── Packages
-    ├── Thread.luau
-    ├── Channel.luau
-    ├── Promise.luau
-    ├── Generated
-    │   └── Metadata.luau
-    └── Util
-        ├── Signal.luau
-        ├── Trove.luau
-        ├── TableUtil.luau
-        ├── Option.luau
-        ├── EnumList.luau
-        ├── MathUtil.luau
-        └── TimerUtil.luau</code></pre>
-
-	<div class="callout warn">
-		<div class="callout-title">Important</div>
-		<code>Util</code> must be a <code>Folder</code> Instance containing the seven modules
-		as children — <code>Thread.luau</code> requires them via
-		<code>script.Parent.Util.Signal</code> etc., so the hierarchy has to match exactly.
-	</div>
+    └── Thread
+        ├── Channel
+        ├── Promise
+        ├── Generated
+        └── Util
+            ├── Signal
+            ├── Trove
+            ├── TableUtil
+            ├── Option
+            ├── EnumList
+            ├── MathUtil
+            └── TimerUtil</code></pre>
 
 	<h2>Where your own code goes</h2>
 	<p>
