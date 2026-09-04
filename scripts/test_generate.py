@@ -18,6 +18,8 @@ def sample_config() -> dict:
             "license": "MIT",
             "realm": "shared",
             "authors": ["owner"],
+            "repository": "https://github.com/owner/thread",
+            "include": ["src", "default.project.json", "README.md", "LICENSE"],
         },
         "services": {
             "InventoryService": {
@@ -55,6 +57,12 @@ class GeneratorTests(unittest.TestCase):
         runtime_manifest = generate.render_runtime_manifest(config)
         positions = [runtime_manifest.index(f'Name = "{name}"') for name in ["Capacity", "Changed", "Echo", "Moved", "NoResult"]]
         self.assertEqual(positions, sorted(positions))
+
+    def test_wally_manifest_metadata(self) -> None:
+        rendered = generate.render_wally(sample_config())
+        self.assertIn('repository = "https://github.com/owner/thread"', rendered)
+        self.assertIn('"src",', rendered)
+        self.assertIn('"default.project.json",', rendered)
 
     def test_duplicate_member_names_are_rejected(self) -> None:
         config = sample_config()
