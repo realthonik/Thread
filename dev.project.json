@@ -5,6 +5,7 @@
     "$className": "DataModel",
     "ReplicatedStorage": {
       "Packages": {
+        "$className": "Folder",
         "Thread": {
           "$path": "src"
         }
