@@ -1,17 +1,6 @@
 {
   "name": "Thread",
-  "emitLegacyScripts": true,
   "tree": {
-    "$className": "DataModel",
-    "ReplicatedStorage": {
-      "Packages": {
-        "$path": "src"
-      }
-    },
-    "ServerScriptService": {
-      "Tests": {
-        "$path": "Tests"
-      }
-    }
+    "$path": "src"
   }
 }
