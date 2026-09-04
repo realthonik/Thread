@@ -32,8 +32,10 @@ jobs:
         run: wally manifest-to-json
       - name: Create build directory
         run: mkdir -p build
+      - name: Build Wally package model
+        run: rojo build default.project.json --output build/Thread.rbxm
       - name: Build unit-test place
-        run: rojo build default.project.json --output build/ThreadTests.rbxlx
+        run: rojo build dev.project.json --output build/ThreadTests.rbxlx
       - name: Build integration-test place
         run: rojo build integration.project.json --output build/ThreadIntegration.rbxlx
 
