@@ -5,7 +5,9 @@
     "$className": "DataModel",
     "ReplicatedStorage": {
       "Packages": {
-        "$path": "src"
+        "Thread": {
+          "$path": "src"
+        }
       }
     },
     "ServerScriptService": {
