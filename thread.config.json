@@ -5,7 +5,16 @@
     "description": "A dependency-aware service framework and networking layer for Roblox",
     "license": "MIT",
     "realm": "shared",
-    "authors": ["realthonik"]
+    "authors": [
+      "realthonik"
+    ],
+    "repository": "https://github.com/realthonik/Thread",
+    "include": [
+      "src",
+      "default.project.json",
+      "README.md",
+      "LICENSE"
+    ]
   },
   "services": {}
 }
