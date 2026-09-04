@@ -7,4 +7,10 @@ license = "MIT"
 realm = "shared"
 authors = ["realthonik"]
 registry = "https://github.com/UpliftGames/wally-index"
-exclude = ["Tests", "integration.project.json", "scripts"]
+repository = "https://github.com/realthonik/Thread"
+include = [
+    "src",
+    "default.project.json",
+    "README.md",
+    "LICENSE",
+]
