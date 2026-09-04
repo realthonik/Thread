@@ -115,16 +115,38 @@ local Thread = require(ReplicatedStorage.Packages.Thread)</code></pre>
 
 	<h3>Wally (available after registry publication)</h3>
 	<p>Thread includes a valid Wally manifest, but the package must exist in the official registry before this command will work. Verify that <a href="https://wally.run/package/realthonik/thread">realthonik/thread</a> lists version <code>2.0.1</code>; otherwise use the Studio asset above.</p>
-	<p>Add Thread to your game's <code>wally.toml</code>:</p>
+	<h4>Install Wally with Rokit</h4>
+	<p>If <code>wally --version</code> already prints a version, skip this setup. Otherwise, install <a href="https://github.com/rojo-rbx/rokit">Rokit</a> using the command for your platform.</p>
+	<p>Windows PowerShell:</p>
+	<pre><code>Invoke-RestMethod https://raw.githubusercontent.com/rojo-rbx/rokit/main/scripts/install.ps1 | Invoke-Expression</code></pre>
+	<p>macOS or Linux:</p>
+	<pre><code>curl -sSf https://raw.githubusercontent.com/rojo-rbx/rokit/main/scripts/install.sh | bash</code></pre>
+	<p>Close and reopen VS Code or your terminal so it receives the updated <code>PATH</code>. From your game's project directory, initialize Rokit if the project does not already contain <code>rokit.toml</code>, then add Wally:</p>
+	<pre><code>rokit init
+rokit add UpliftGames/wally@0.3.2
+wally --version</code></pre>
+	<p>If the repository already contains <code>rokit.toml</code> with Wally listed under <code>[tools]</code>, run <code>rokit install</code> instead of <code>rokit init</code> and <code>rokit add</code>.</p>
+
+	<h4>Add Thread to a game</h4>
+	<p>Create a Wally manifest with <code>wally init</code> if your game does not already have <code>wally.toml</code>. Add Thread to its dependencies:</p>
 	<pre><code>[dependencies]
 Thread = "realthonik/thread@2.0.1"</code></pre>
-	<p>Run <code>wally install</code>, then map Wally's <code>Packages</code> directory into <code>ReplicatedStorage.Packages</code> with Rojo.</p>
+	<p>Run <code>wally install</code> from the directory containing <code>wally.toml</code>, then map Wally's <code>Packages</code> directory into <code>ReplicatedStorage.Packages</code> with Rojo.</p>
 	<pre><code>"ReplicatedStorage": {
   "Packages": {
     "$path": "Packages"
   }
 }</code></pre>
 	<p>The same <code>require(ReplicatedStorage.Packages.Thread)</code> call shown above then works.</p>
+
+	<h4>Publish a Thread release (maintainers only)</h4>
+	<p>Publishing is separate from installing the package. From the Thread repository root, confirm <code>thread.config.json</code> and the generated <code>wally.toml</code> contain the release version, then run:</p>
+	<pre><code>rokit install
+wally manifest-to-json
+wally package --list
+wally login
+wally publish</code></pre>
+	<p>Complete GitHub device authorization using the <code>realthonik</code> account. A successful upload prints <code>Package published successfully!</code>. Verify the exact version on the <a href="https://wally.run/package/realthonik/thread">Wally package page</a> afterward. Wally package versions are immutable, so a correction requires a new version rather than republishing <code>2.0.1</code>.</p>
 
 	<h3>Manual installation</h3>
 	<p>If you are not using Wally, preserve the package hierarchy under a ModuleScript named <code>Thread</code>:</p>

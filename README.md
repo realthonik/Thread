@@ -99,14 +99,42 @@ If you are consuming a source checkout, map `src` as the `Thread` ModuleScript r
 
 Thread includes a valid Wally manifest, but the package must exist in the official registry before this command will work. Verify that [`realthonik/thread`](https://wally.run/package/realthonik/thread) lists version `2.0.1`; otherwise use the Studio asset above.
 
-Add Thread to your game's `wally.toml`:
+#### Install Wally with Rokit
+
+If `wally --version` already prints a version, skip this setup. Otherwise, install [Rokit](https://github.com/rojo-rbx/rokit) using the command for your platform.
+
+Windows PowerShell:
+
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/rojo-rbx/rokit/main/scripts/install.ps1 | Invoke-Expression
+```
+
+macOS or Linux:
+
+```bash
+curl -sSf https://raw.githubusercontent.com/rojo-rbx/rokit/main/scripts/install.sh | bash
+```
+
+Close and reopen VS Code or your terminal so it receives the updated `PATH`. From your game's project directory, initialize Rokit if the project does not already contain `rokit.toml`, then add Wally:
+
+```powershell
+rokit init
+rokit add UpliftGames/wally@0.3.2
+wally --version
+```
+
+If the repository already contains `rokit.toml` with Wally listed under `[tools]`, run `rokit install` instead of `rokit init` and `rokit add`.
+
+#### Add Thread to a game
+
+Create a Wally manifest with `wally init` if your game does not already have `wally.toml`. Add Thread to its dependencies:
 
 ```toml
 [dependencies]
 Thread = "realthonik/thread@2.0.1"
 ```
 
-Install dependencies:
+Install dependencies from the directory containing `wally.toml`:
 
 ```bash
 wally install
@@ -125,6 +153,20 @@ Map Wally's `Packages` directory into `ReplicatedStorage.Packages` in your Rojo 
 ```
 
 The same `require(ReplicatedStorage.Packages.Thread)` call shown above then works.
+
+#### Publish a Thread release (maintainers only)
+
+Publishing is separate from installing the package. From the Thread repository root, confirm `thread.config.json` and the generated `wally.toml` contain the release version, then run:
+
+```powershell
+rokit install
+wally manifest-to-json
+wally package --list
+wally login
+wally publish
+```
+
+Complete GitHub device authorization using the `realthonik` account. A successful upload prints `Package published successfully!`. Verify the exact version on the [Wally package page](https://wally.run/package/realthonik/thread) afterward. Wally package versions are immutable, so a correction requires a new version rather than republishing `2.0.1`.
 
 ### Manual installation
 

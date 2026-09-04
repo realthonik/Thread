@@ -226,6 +226,12 @@ h3 {
 	scroll-margin-top: 20px;
 }
 
+h4 {
+	font-size: 1rem;
+	margin: 24px 0 8px;
+	scroll-margin-top: 20px;
+}
+
 p {
 	margin: 0 0 14px;
 }
@@ -262,7 +268,7 @@ pre code {
 	padding: 0;
 }
 
-p code, li code, td code, h3 code, h2 code {
+p code, li code, td code, h4 code, h3 code, h2 code {
 	background: var(--bg-code);
 	border: 1px solid var(--border);
 	border-radius: 5px;
