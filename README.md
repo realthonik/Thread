@@ -32,8 +32,8 @@ This document explains not just *what* each piece does, but *how it works intern
 
 ```
 Thread/
-├── src/                  -- copy/map this folder to ReplicatedStorage/Packages
-│   ├── Thread.luau      -- service registry + lifecycle + startup sequencing
+├── src/                  -- Wally/Rojo package root
+│   ├── init.luau        -- service registry + lifecycle + startup sequencing
 │   ├── Channel.luau     -- everything networking-related (RemoteEvents/Functions)
 │   ├── Promise.luau     -- async primitive used by startup and shutdown
 │   ├── Generated/       -- generated metadata, runtime manifest, and typed clients
@@ -49,7 +49,9 @@ Thread/
 │   ├── TestRunner.luau   -- ~30-line assert-based test runner, no TestEZ
 │   └── Thread.spec.luau  -- the actual test suite
 ├── generated/            -- generated service manifest and static client types
-├── default.project.json  -- standard Rojo mapping
+├── default.project.json  -- published package model
+├── dev.project.json      -- local development/test place
+├── integration.project.json
 ├── thread.config.json    -- source of truth for versions and generated files
 ├── rokit.toml            -- pinned development toolchain
 ├── wally.toml            -- generated package manifest
@@ -62,25 +64,64 @@ The runtime requires nothing outside `src/`. You can copy it directly, map it wi
 
 ## Installation
 
-Copy the contents of `src/` (including the `Util/` subfolder) into `ReplicatedStorage/Packages/`, either by dragging the files into Studio directly or by mapping `src` there in your Rojo project. Rojo is optional.
+### Wally (recommended)
+
+Add Thread to your game's `wally.toml`:
+
+```toml
+[dependencies]
+Thread = "realthonik/thread@2.0.0"
+```
+
+Install dependencies:
+
+```bash
+wally install
+```
+
+Map Wally's `Packages` directory into `ReplicatedStorage.Packages` in your Rojo project:
+
+```json
+{
+  "ReplicatedStorage": {
+    "Packages": {
+      "$path": "Packages"
+    }
+  }
+}
+```
+
+Then require Thread normally:
+
+```lua
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Thread = require(ReplicatedStorage.Packages.Thread)
+```
+
+That's the complete Thread-specific setup. Thread has no runtime dependencies of its own.
+
+### Manual installation
+
+If you are not using Wally, copy the contents of `src/` into a `ModuleScript` named `Thread`, preserving its child hierarchy:
 
 ```
 ReplicatedStorage
 └── Packages
-    ├── Thread.luau
-    ├── Channel.luau
-    ├── Promise.luau
-    └── Util
-        ├── Signal.luau
-        ├── Trove.luau
-        ├── TableUtil.luau
-        ├── Option.luau
-        ├── EnumList.luau
-        ├── MathUtil.luau
-        └── TimerUtil.luau
+    └── Thread
+        ├── Channel
+        ├── Promise
+        ├── Generated
+        └── Util
+            ├── Signal
+            ├── Trove
+            ├── TableUtil
+            ├── Option
+            ├── EnumList
+            ├── MathUtil
+            └── TimerUtil
 ```
 
-`Util` **must** be a `Folder` Instance containing the seven modules as children — `Thread.luau` requires them via `script.Parent.Util.Signal` etc., so the hierarchy has to match exactly.
+The package root is `src/init.luau`; its sibling files are children of the resulting `Thread` ModuleScript under Rojo.
 
 There is no fixed location for your own game code — `Thread.Register(folder)` just points at whatever folder you keep your services/controllers in. The conventional layout is:
 
@@ -781,7 +822,7 @@ Install the pinned toolchain with Rokit and run the static checks:
 rokit install
 stylua --check src Tests generated
 selene src Tests generated
-rojo build default.project.json --output build/ThreadTests.rbxlx
+rojo build dev.project.json --output build/ThreadTests.rbxlx
 rojo build integration.project.json --output build/ThreadIntegration.rbxlx
 ```
 
