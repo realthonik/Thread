@@ -17,7 +17,7 @@
 	<div class="sidebar-brand">
 		<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
 		<span class="brand-wordmark">Thread</span>
-		<span class="version">v2.0.0</span>
+		<span class="version">v2.0.1</span>
 	</div>
 
 	<div class="nav-group">
@@ -54,12 +54,12 @@
 	<div class="eyebrow">Get Started</div>
 	<h1>Installation &amp; Project Anatomy</h1>
 	<p class="lede">
-		The runtime has no third-party dependencies. Install Thread with Wally for the simplest setup, or copy the package manually if you are not using Wally.
+		The runtime has no third-party dependencies. Install the Studio-ready release asset, map the source with Rojo, or use Wally after the package is published to the registry.
 	</p>
 
 	<h2>Project Anatomy</h2>
 	<pre><code>Thread/
-├── src/                  <span class="tok-comment">-- copy/map this to ReplicatedStorage/Packages</span>
+├── src/                  <span class="tok-comment">-- map this as ReplicatedStorage/Packages/Thread</span>
 │   ├── init.luau        <span class="tok-comment">-- Wally/Rojo package root + lifecycle</span>
 │   ├── Channel.luau     <span class="tok-comment">-- everything networking-related (RemoteEvents/Functions)</span>
 │   ├── Promise.luau     <span class="tok-comment">-- async primitive used by Thread.Start()/OnStart()</span>
@@ -87,23 +87,44 @@
 └── LICENSE</code></pre>
 
 	<h2>Installation</h2>
-	<h3>Wally (recommended)</h3>
+	<h3>Roblox Studio asset (recommended)</h3>
+	<ol>
+		<li>Open the <a href="https://github.com/realthonik/Thread/releases">Thread releases page</a> and select <code>v2.0.1</code>.</li>
+		<li>Download <code>Thread.v2.0.1.rbxm</code> from the release assets.</li>
+		<li>Drag the file into Roblox Studio.</li>
+		<li>Move the resulting <code>Thread</code> ModuleScript to <code>ReplicatedStorage.Packages</code>.</li>
+	</ol>
+	<p>Thread is then available as:</p>
+	<pre><code>local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Thread = require(ReplicatedStorage.Packages.Thread)</code></pre>
+	<div class="callout">
+		<div class="callout-title">No runtime dependencies</div>
+		The release asset contains the complete Thread ModuleScript and its children. No other package is required at runtime.
+	</div>
+
+	<h3>Rojo source mapping</h3>
+	<p>If you are consuming a source checkout, map <code>src</code> as the <code>Thread</code> ModuleScript rather than mapping it directly as <code>Packages</code>:</p>
+	<pre><code>"ReplicatedStorage": {
+  "Packages": {
+    "$className": "Folder",
+    "Thread": {
+      "$path": "src"
+    }
+  }
+}</code></pre>
+
+	<h3>Wally (available after registry publication)</h3>
+	<p>Thread includes a valid Wally manifest, but the package must exist in the official registry before this command will work. Verify that <a href="https://wally.run/package/realthonik/thread">realthonik/thread</a> lists version <code>2.0.1</code>; otherwise use the Studio asset above.</p>
 	<p>Add Thread to your game's <code>wally.toml</code>:</p>
 	<pre><code>[dependencies]
-Thread = "realthonik/thread@2.0.0"</code></pre>
+Thread = "realthonik/thread@2.0.1"</code></pre>
 	<p>Run <code>wally install</code>, then map Wally's <code>Packages</code> directory into <code>ReplicatedStorage.Packages</code> with Rojo.</p>
 	<pre><code>"ReplicatedStorage": {
   "Packages": {
     "$path": "Packages"
   }
 }</code></pre>
-	<p>Thread is then available as:</p>
-	<pre><code>local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Thread = require(ReplicatedStorage.Packages.Thread)</code></pre>
-	<div class="callout">
-		<div class="callout-title">That's it</div>
-		Thread has no runtime dependencies of its own. Wally installs the package and Rojo mounts it as a single <code>Thread</code> ModuleScript.
-	</div>
+	<p>The same <code>require(ReplicatedStorage.Packages.Thread)</code> call shown above then works.</p>
 
 	<h3>Manual installation</h3>
 	<p>If you are not using Wally, preserve the package hierarchy under a ModuleScript named <code>Thread</code>:</p>

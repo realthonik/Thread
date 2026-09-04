@@ -60,17 +60,50 @@ Thread/
 └── LICENSE
 ```
 
-The runtime requires nothing outside `src/`. You can copy it directly, map it with the included Rojo project, or consume the package through Wally.
+The runtime requires nothing outside `src/`. You can install the Studio-ready release asset, map the source with Rojo, or consume the package through Wally after it is published to the registry.
 
 ## Installation
 
-### Wally (recommended)
+### Roblox Studio asset (recommended)
+
+1. Open the [Thread releases page](https://github.com/realthonik/Thread/releases) and select `v2.0.1`.
+2. Download `Thread.v2.0.1.rbxm` from the release assets.
+3. Drag the file into Roblox Studio.
+4. Move the resulting `Thread` ModuleScript to `ReplicatedStorage.Packages`.
+
+Then require Thread normally:
+
+```lua
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Thread = require(ReplicatedStorage.Packages.Thread)
+```
+
+Thread has no runtime dependencies of its own.
+
+### Rojo source mapping
+
+If you are consuming a source checkout, map `src` as the `Thread` ModuleScript rather than mapping it directly as `Packages`:
+
+```json
+"ReplicatedStorage": {
+  "Packages": {
+    "$className": "Folder",
+    "Thread": {
+      "$path": "src"
+    }
+  }
+}
+```
+
+### Wally (available after registry publication)
+
+Thread includes a valid Wally manifest, but the package must exist in the official registry before this command will work. Verify that [`realthonik/thread`](https://wally.run/package/realthonik/thread) lists version `2.0.1`; otherwise use the Studio asset above.
 
 Add Thread to your game's `wally.toml`:
 
 ```toml
 [dependencies]
-Thread = "realthonik/thread@2.0.0"
+Thread = "realthonik/thread@2.0.1"
 ```
 
 Install dependencies:
@@ -91,14 +124,7 @@ Map Wally's `Packages` directory into `ReplicatedStorage.Packages` in your Rojo 
 }
 ```
 
-Then require Thread normally:
-
-```lua
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Thread = require(ReplicatedStorage.Packages.Thread)
-```
-
-That's the complete Thread-specific setup. Thread has no runtime dependencies of its own.
+The same `require(ReplicatedStorage.Packages.Thread)` call shown above then works.
 
 ### Manual installation
 

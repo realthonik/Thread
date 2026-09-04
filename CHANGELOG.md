@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.0.1
+
+### Changed
+
+- The Studio-ready `.rbxm` release asset is now the recommended installation path.
+- Installation documentation now distinguishes release-asset, Rojo source, and Wally registry workflows.
+- Wally instructions now tell users to verify registry availability instead of claiming an unpublished package can be installed.
+
+### Fixed
+
+- Declared `ReplicatedStorage.Packages` as a Folder in the development and integration Rojo projects so both places build successfully.
+- Corrected the documented Rojo source mapping so `src` becomes the `Thread` ModuleScript under `ReplicatedStorage.Packages`.
+
 ## v2.0.0
 
 ### Added
