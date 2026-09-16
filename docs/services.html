@@ -79,8 +79,17 @@
 
 <span class="tok-keyword">return</span> MoneyService</code></pre>
 
-	<h2>The Lifecycle</h2>
+	<h2 id="the-lifecycle">The Lifecycle</h2>
 	<p>A service can define three lifecycle methods. Each may return a Promise, which Thread awaits before continuing:</p>
+
+	<figure class="execution-model">
+		<img src="assets/execution-model.svg" alt="Thread execution model from service registration through dependency ordering, remote binding, initialization, startup, client readiness, and reverse-order shutdown.">
+		<figcaption>
+			Thread completes each startup phase in dependency order. Clients can wait for a published service manifest while
+			<code>Thread.OnStart()</code> independently observes local startup.
+		</figcaption>
+	</figure>
+
 	<ul>
 		<li>
 			<strong><code>ThreadInit(self)</code></strong> — runs first, for every service, in

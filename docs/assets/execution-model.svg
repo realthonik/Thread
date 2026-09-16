@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1040" viewBox="0 0 960 1040" role="img" aria-labelledby="title description">
+	<title id="title">Thread execution model</title>
+	<desc id="description">A flowchart showing registration, dependency ordering, server remote binding, initialization, startup, service readiness, client proxy construction, startup completion, and reverse-order shutdown.</desc>
+	<style>
+		:root { color-scheme: light dark; }
+		.canvas { fill: #f7f7fb; }
+		.stage { fill: #ffffff; stroke: #d9dce4; }
+		.stage-accent { fill: #f1edfc; stroke: #6e56cf; }
+		.stage-ready { fill: #eaf8f1; stroke: #2f8f68; }
+		.side { fill: #f3f4f7; stroke: #9aa1b1; }
+		.failure { fill: #fff5e5; stroke: #d79722; }
+		.line { stroke: #7c8391; }
+		.line-accent { stroke: #6e56cf; }
+		.line-failure { stroke: #d79722; }
+		.title { fill: #181b20; }
+		.body { fill: #5b6270; }
+		.code { fill: #5940c4; }
+		.kicker { fill: #6e56cf; }
+		@media (prefers-color-scheme: dark) {
+			.canvas { fill: #17191e; }
+			.stage { fill: #20232a; stroke: #363b46; }
+			.stage-accent { fill: #29233f; stroke: #a48cf2; }
+			.stage-ready { fill: #19342a; stroke: #63c69a; }
+			.side { fill: #1c1f26; stroke: #687080; }
+			.failure { fill: #332a17; stroke: #d9aa4e; }
+			.line { stroke: #8e96a5; }
+			.line-accent { stroke: #a48cf2; }
+			.line-failure { stroke: #d9aa4e; }
+			.title { fill: #f0f1f4; }
+			.body { fill: #aeb4c0; }
+			.code { fill: #c0aef7; }
+			.kicker { fill: #b9a4f5; }
+		}
+		text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+		.title { font-size: 18px; font-weight: 700; }
+		.body { font-size: 14px; }
+		.code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; }
+		.kicker { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; }
+		.box { stroke-width: 2; rx: 14; }
+		.arrow { fill: none; stroke-width: 2.5; marker-end: url(#arrow); }
+		.arrow-accent { fill: none; stroke-width: 2.5; marker-end: url(#arrow-accent); }
+		.arrow-failure { fill: none; stroke-width: 2; stroke-dasharray: 7 7; marker-end: url(#arrow-failure); }
+	</style>
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#7c8391"/>
+		</marker>
+		<marker id="arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#6e56cf"/>
+		</marker>
+		<marker id="arrow-failure" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#d79722"/>
+		</marker>
+	</defs>
+
+	<rect class="canvas" width="960" height="1040" rx="24"/>
+	<text class="kicker" x="88" y="54">LOCAL LIFECYCLE</text>
+	<text class="kicker" x="672" y="54">CLIENT ACCESS</text>
+
+	<rect class="box stage-accent" x="80" y="78" width="500" height="92"/>
+	<text class="title" x="330" y="114" text-anchor="middle">Services register</text>
+	<text class="code" x="330" y="141" text-anchor="middle">Thread.Register() / Thread.CreateService()</text>
+
+	<path class="arrow line-accent" d="M330 170 V214"/>
+	<rect class="box stage" x="80" y="216" width="500" height="92"/>
+	<text class="title" x="330" y="252" text-anchor="middle">Dependencies resolve</text>
+	<text class="body" x="330" y="279" text-anchor="middle">Unknown or circular dependencies reject startup</text>
+
+	<path class="arrow line" d="M330 308 V352"/>
+	<rect class="box stage" x="80" y="354" width="500" height="104"/>
+	<text class="title" x="330" y="389" text-anchor="middle">Server binds client remotes</text>
+	<text class="code" x="330" y="416" text-anchor="middle">Channel.WrapService()</text>
+	<text class="body" x="330" y="440" text-anchor="middle">Generated manifests are validated before lifecycle code runs</text>
+
+	<path class="arrow line" d="M330 458 V502"/>
+	<rect class="box stage-accent" x="80" y="504" width="500" height="96"/>
+	<text class="title" x="330" y="541" text-anchor="middle">Initialize every healthy service</text>
+	<text class="code" x="330" y="570" text-anchor="middle">service:ThreadInit()</text>
+
+	<path class="arrow line-accent" d="M330 600 V644"/>
+	<rect class="box stage-accent" x="80" y="646" width="500" height="96"/>
+	<text class="title" x="330" y="683" text-anchor="middle">Start every healthy service</text>
+	<text class="code" x="330" y="712" text-anchor="middle">service:ThreadStart()</text>
+
+	<path class="arrow line-accent" d="M330 742 V786"/>
+	<rect class="box stage-ready" x="80" y="788" width="500" height="104"/>
+	<text class="title" x="330" y="824" text-anchor="middle">Publish readiness and resolve startup</text>
+	<text class="code" x="330" y="851" text-anchor="middle">Channel.MarkServiceReady() + Thread.OnStart()</text>
+	<text class="body" x="330" y="875" text-anchor="middle">The framework is ready for normal game logic</text>
+
+	<path class="arrow line" d="M330 892 V936"/>
+	<rect class="box side" x="80" y="938" width="500" height="72"/>
+	<text class="title" x="330" y="969" text-anchor="middle">Shutdown reverses dependency order</text>
+	<text class="code" x="330" y="994" text-anchor="middle">Thread.Stop() → service:ThreadStop()</text>
+
+	<rect class="box side" x="650" y="216" width="230" height="92"/>
+	<text class="title" x="765" y="252" text-anchor="middle">Observe local startup</text>
+	<text class="code" x="765" y="279" text-anchor="middle">Thread.OnStart()</text>
+	<path class="arrow line" d="M650 262 H606 V840 H580"/>
+
+	<rect class="box side" x="650" y="504" width="230" height="96"/>
+	<text class="title" x="765" y="541" text-anchor="middle">Request a server proxy</text>
+	<text class="code" x="765" y="570" text-anchor="middle">Channel.BuildClient()</text>
+	<path class="arrow line" d="M765 600 V840 H606"/>
+
+	<rect class="box stage-ready" x="650" y="788" width="230" height="104"/>
+	<text class="title" x="765" y="824" text-anchor="middle">Build exact proxy</text>
+	<text class="body" x="765" y="851" text-anchor="middle">Wait for ready marker, read</text>
+	<text class="body" x="765" y="873" text-anchor="middle">manifest, then bind wrappers</text>
+
+	<rect class="box failure" x="650" y="646" width="230" height="96"/>
+	<text class="title" x="765" y="683" text-anchor="middle">Failure path</text>
+	<text class="body" x="765" y="710" text-anchor="middle">Skip failed dependents;</text>
+	<text class="body" x="765" y="731" text-anchor="middle">critical failures reject startup</text>
+	<path class="arrow-failure line-failure" d="M580 694 H640"/>
+</svg>

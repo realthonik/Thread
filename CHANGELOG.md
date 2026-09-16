@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- A graphical execution model for service registration, lifecycle sequencing, client readiness, failure handling, and shutdown.
+
+### Changed
+
+- Corrected generated package and runtime license metadata to MPL-2.0.
+- Streamlined the README into a focused project overview and moved detailed guidance to the documentation website.
+
 ## v1.2.1
 
 ### Changed

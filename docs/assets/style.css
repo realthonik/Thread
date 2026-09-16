@@ -249,6 +249,28 @@ strong {
 	color: var(--text);
 }
 
+.execution-model {
+	margin: 28px 0 32px;
+	padding: 18px;
+	background: var(--bg-elevated);
+	border: 1px solid var(--border);
+	border-radius: 14px;
+	box-shadow: var(--shadow);
+}
+
+.execution-model img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.execution-model figcaption {
+	margin-top: 14px;
+	color: var(--text-muted);
+	font-size: 0.9rem;
+	text-align: center;
+}
+
 /* ---------- Code ---------- */
 
 pre {
