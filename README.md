@@ -66,8 +66,8 @@ The runtime requires nothing outside `src/`. You can install the Studio-ready re
 
 ### Roblox Studio asset (recommended)
 
-1. Open the [Thread releases page](https://github.com/realthonik/Thread/releases) and select `v2.0.1`.
-2. Download `Thread.v2.0.1.rbxm` from the release assets.
+1. Open the [Thread releases page](https://github.com/realthonik/Thread/releases) and select `v1.2.1`.
+2. Download `Thread.v1.2.1.rbxm` from the release assets.
 3. Drag the file into Roblox Studio.
 4. Move the resulting `Thread` ModuleScript to `ReplicatedStorage.Packages`.
 
@@ -97,7 +97,7 @@ If you are consuming a source checkout, map `src` as the `Thread` ModuleScript r
 
 ### Wally (available after registry publication)
 
-Thread includes a valid Wally manifest, but the package must exist in the official registry before this command will work. Verify that [`realthonik/thread`](https://wally.run/package/realthonik/thread) lists version `2.0.1`; otherwise use the Studio asset above.
+Thread includes a valid Wally manifest, but the package must exist in the official registry before this command will work. Verify that [`realthonik/thread`](https://wally.run/package/realthonik/thread) lists version `1.2.1`; otherwise use the Studio asset above.
 
 #### Install Wally with Rokit
 
@@ -131,7 +131,7 @@ Create a Wally manifest with `wally init` if your game does not already have `wa
 
 ```toml
 [dependencies]
-Thread = "realthonik/thread@2.0.1"
+Thread = "realthonik/thread@1.2.1"
 ```
 
 Install dependencies from the directory containing `wally.toml`:
@@ -166,7 +166,7 @@ wally login
 wally publish
 ```
 
-Complete GitHub device authorization using the `realthonik` account. A successful upload prints `Package published successfully!`. Verify the exact version on the [Wally package page](https://wally.run/package/realthonik/thread) afterward. Wally package versions are immutable, so a correction requires a new version rather than republishing `2.0.1`.
+Complete GitHub device authorization using the `realthonik` account. A successful upload prints `Package published successfully!`. Verify the exact version on the [Wally package page](https://wally.run/package/realthonik/thread) afterward. Wally package versions are immutable, so a correction requires a new version rather than republishing `1.2.1`.
 
 ### Manual installation
 

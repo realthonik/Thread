@@ -3,7 +3,7 @@
 
 return table.freeze({
 	Name = "realthonik/thread",
-	Version = "2.0.1",
+	Version = "1.2.1",
 	Description = "A dependency-aware service framework and networking layer for Roblox",
 	License = "MIT",
 	Authors = table.freeze({ "realthonik" }),

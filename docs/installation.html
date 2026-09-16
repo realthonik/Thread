@@ -17,7 +17,7 @@
 	<div class="sidebar-brand">
 		<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
 		<span class="brand-wordmark">Thread</span>
-		<span class="version">v2.0.1</span>
+		<span class="version">v1.2.1</span>
 	</div>
 
 	<div class="nav-group">
@@ -89,8 +89,8 @@
 	<h2>Installation</h2>
 	<h3>Roblox Studio asset (recommended)</h3>
 	<ol>
-		<li>Open the <a href="https://github.com/realthonik/Thread/releases">Thread releases page</a> and select <code>v2.0.1</code>.</li>
-		<li>Download <code>Thread.v2.0.1.rbxm</code> from the release assets.</li>
+		<li>Open the <a href="https://github.com/realthonik/Thread/releases">Thread releases page</a> and select <code>v1.2.1</code>.</li>
+		<li>Download <code>Thread.v1.2.1.rbxm</code> from the release assets.</li>
 		<li>Drag the file into Roblox Studio.</li>
 		<li>Move the resulting <code>Thread</code> ModuleScript to <code>ReplicatedStorage.Packages</code>.</li>
 	</ol>
@@ -114,7 +114,7 @@ local Thread = require(ReplicatedStorage.Packages.Thread)</code></pre>
 }</code></pre>
 
 	<h3>Wally (available after registry publication)</h3>
-	<p>Thread includes a valid Wally manifest, but the package must exist in the official registry before this command will work. Verify that <a href="https://wally.run/package/realthonik/thread">realthonik/thread</a> lists version <code>2.0.1</code>; otherwise use the Studio asset above.</p>
+	<p>Thread includes a valid Wally manifest, but the package must exist in the official registry before this command will work. Verify that <a href="https://wally.run/package/realthonik/thread">realthonik/thread</a> lists version <code>1.2.1</code>; otherwise use the Studio asset above.</p>
 	<h4>Install Wally with Rokit</h4>
 	<p>If <code>wally --version</code> already prints a version, skip this setup. Otherwise, install <a href="https://github.com/rojo-rbx/rokit">Rokit</a> using the command for your platform.</p>
 	<p>Windows PowerShell:</p>
@@ -130,7 +130,7 @@ wally --version</code></pre>
 	<h4>Add Thread to a game</h4>
 	<p>Create a Wally manifest with <code>wally init</code> if your game does not already have <code>wally.toml</code>. Add Thread to its dependencies:</p>
 	<pre><code>[dependencies]
-Thread = "realthonik/thread@2.0.1"</code></pre>
+Thread = "realthonik/thread@1.2.1"</code></pre>
 	<p>Run <code>wally install</code> from the directory containing <code>wally.toml</code>, then map Wally's <code>Packages</code> directory into <code>ReplicatedStorage.Packages</code> with Rojo.</p>
 	<pre><code>"ReplicatedStorage": {
   "Packages": {
@@ -146,7 +146,7 @@ wally manifest-to-json
 wally package --list
 wally login
 wally publish</code></pre>
-	<p>Complete GitHub device authorization using the <code>realthonik</code> account. A successful upload prints <code>Package published successfully!</code>. Verify the exact version on the <a href="https://wally.run/package/realthonik/thread">Wally package page</a> afterward. Wally package versions are immutable, so a correction requires a new version rather than republishing <code>2.0.1</code>.</p>
+	<p>Complete GitHub device authorization using the <code>realthonik</code> account. A successful upload prints <code>Package published successfully!</code>. Verify the exact version on the <a href="https://wally.run/package/realthonik/thread">Wally package page</a> afterward. Wally package versions are immutable, so a correction requires a new version rather than republishing <code>1.2.1</code>.</p>
 
 	<h3>Manual installation</h3>
 	<p>If you are not using Wally, preserve the package hierarchy under a ModuleScript named <code>Thread</code>:</p>
