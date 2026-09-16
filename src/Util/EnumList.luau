@@ -29,10 +29,10 @@ export type EnumList = {
 	[string]: any,
 }
 
-local LIST_KEY = newproxy()
-local NAME_KEY = newproxy()
+const LIST_KEY = newproxy()
+const NAME_KEY = newproxy()
 
-local function createEnumItem(name: string, value: number, enumList: any): EnumItem
+const function createEnumItem(name: string, value: number, enumList: any): EnumItem
 	local item = {
 		Name = name,
 		Value = value,
@@ -42,7 +42,7 @@ local function createEnumItem(name: string, value: number, enumList: any): EnumI
 	return item
 end
 
-local EnumList = {}
+const EnumList = {}
 EnumList.__index = EnumList
 
 function EnumList.new(name: string, names: { string }): EnumList

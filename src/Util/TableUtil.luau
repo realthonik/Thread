@@ -8,7 +8,7 @@
 	table rather than mutating the input.
 ]]
 
-local TableUtil = {}
+const TableUtil = {}
 
 --------------------------------------------------
 -- Copying

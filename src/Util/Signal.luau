@@ -33,13 +33,13 @@ export type Signal = {
 	Destroy: (self: Signal) -> (),
 }
 
-local Signal = {}
+const Signal = {}
 Signal.__index = Signal
 
-local Connection = {}
+const Connection = {}
 Connection.__index = Connection
 
-local function newConnection(signal: any, fn: (...any) -> ()): any
+const function newConnection(signal: any, fn: (...any) -> ()): any
 	return setmetatable({
 		Connected = true,
 		_signal = signal,
@@ -77,21 +77,21 @@ Connection.Destroy = Connection.Disconnect
 
 local freeRunnerThread: thread? = nil
 
-local function runHandler(fn: (...any) -> (), ...: any)
+const function runHandler(fn: (...any) -> (), ...: any)
 	local acquired = freeRunnerThread
 	freeRunnerThread = nil
 	fn(...)
 	freeRunnerThread = acquired
 end
 
-local function runnerLoop(fn: (...any) -> (), ...: any)
+const function runnerLoop(fn: (...any) -> (), ...: any)
 	runHandler(fn, ...)
 	while true do
 		runHandler(coroutine.yield())
 	end
 end
 
-local function schedule(fn: (...any) -> (), ...: any)
+const function schedule(fn: (...any) -> (), ...: any)
 	if not freeRunnerThread then
 		freeRunnerThread = coroutine.create(runnerLoop)
 	end

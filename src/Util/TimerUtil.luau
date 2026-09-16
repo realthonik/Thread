@@ -10,7 +10,7 @@
 	button.MouseButton1Click:Connect(onClick) -- ignores clicks within 1s of the last one
 ]]
 
-local TimerUtil = {}
+const TimerUtil = {}
 
 -- Wraps `fn` so the first call runs immediately, then any call within
 -- `seconds` after that is ignored until the cooldown expires. The classic

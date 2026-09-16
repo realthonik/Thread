@@ -5,10 +5,10 @@
 	executors remain compatible because the third argument is optional to use.
 ]]
 
-local Promise = {}
+const Promise = {}
 Promise.__index = Promise
 
-local CancellationError = {}
+const CancellationError = {}
 CancellationError.__index = CancellationError
 
 function CancellationError:__tostring(): string
@@ -35,15 +35,15 @@ export type Promise<T = any> = typeof(setmetatable(
 	Promise
 ))
 
-local function isPromise(value: any): boolean
+const function isPromise(value: any): boolean
 	return type(value) == "table" and getmetatable(value) == Promise
 end
 
-local function isCancelledError(value: any): boolean
+const function isCancelledError(value: any): boolean
 	return type(value) == "table" and getmetatable(value) == CancellationError
 end
 
-local function makeCancellationError(reason: any?): CancellationError
+const function makeCancellationError(reason: any?): CancellationError
 	return setmetatable({
 		kind = "PromiseCancellation",
 		message = if reason == nil then "Promise cancelled" else "Promise cancelled: " .. tostring(reason),
@@ -199,7 +199,7 @@ function Promise.cancelled(reason: any?): Promise
 	end)
 end
 
-local function cancelAll(promises: { any })
+const function cancelAll(promises: { any })
 	for _, promise in ipairs(promises) do
 		if isPromise(promise) and promise:getState() == "Pending" then
 			promise:cancel("parent promise cancelled")

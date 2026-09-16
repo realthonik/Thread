@@ -131,7 +131,7 @@ def render_typed_clients(config: dict) -> str:
         lines.append("\tBuildClient: BuildClient,")
         for service_name in service_names:
             lines.append(f"\t{service_name}: (timeout: number?) -> {service_name},")
-        lines.extend(["}", "", "local Clients: Clients = {"])
+        lines.extend(["}", "", "const Clients: Clients = {"])
         lines.append("\tBuildClient = Channel.BuildClient :: any,")
         for service_name in service_names:
             lines.extend(
@@ -147,7 +147,7 @@ def render_typed_clients(config: dict) -> str:
             [
                 "export type Clients = {}",
                 "",
-                "local Clients: Clients = {}",
+                "const Clients: Clients = {}",
                 "return table.freeze(Clients)",
                 "",
             ]

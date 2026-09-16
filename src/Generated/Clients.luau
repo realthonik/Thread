@@ -12,5 +12,5 @@ export type Property<T> = {
 
 export type Clients = {}
 
-local Clients: Clients = {}
+const Clients: Clients = {}
 return table.freeze(Clients)

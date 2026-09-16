@@ -18,7 +18,7 @@
 	UnreliableRemoteEvent).
 ]]
 
-local Channel = {}
+const Channel = {}
 
 Channel.Debug = false
 Channel.DefaultRateLimit = 30 -- max calls / second / player / remote for Signals & Channel.On
@@ -27,12 +27,12 @@ Channel.DefaultMaxPayloadBytes = 64 * 1024
 Channel.InvokeClientTimeout = 10 -- seconds before Channel.InvokeClient gives up
 Channel.WaitTimeout = 10 -- seconds before any WaitForChild gives up
 
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
+const RunService = game:GetService("RunService")
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
+const Players = game:GetService("Players")
+const HttpService = game:GetService("HttpService")
 
-local IsServer = RunService:IsServer()
+const IsServer = RunService:IsServer()
 Channel.IsServer = IsServer
 
 --------------------------------------------------
@@ -72,15 +72,15 @@ export type RemoteError = {
 	Details: any?,
 }
 
-local function PackArgs(...: any): { [any]: any }
+const function PackArgs(...: any): { [any]: any }
 	return table.pack(...)
 end
 
-local function UnpackArgs(args: { [any]: any }): ...any
+const function UnpackArgs(args: { [any]: any }): ...any
 	return table.unpack(args, 1, args.n or #args)
 end
 
-local function SliceArgs(args: { [any]: any }, first: number): { [any]: any }
+const function SliceArgs(args: { [any]: any }, first: number): { [any]: any }
 	local last = args.n or #args
 	local out: { [any]: any } = table.create(math.max(last - first + 1, 0))
 	out.n = math.max(last - first + 1, 0)
@@ -94,9 +94,9 @@ end
 -- Validation and structured service responses
 --------------------------------------------------
 
-local Validators = {}
+const Validators = {}
 
-local function TypeValidator(expectedType: string): ValidatorFn
+const function TypeValidator(expectedType: string): ValidatorFn
 	return function(value: any)
 		local actualType = typeof(value)
 		if actualType == expectedType then
@@ -200,9 +200,9 @@ end
 
 Channel.Validators = table.freeze(Validators)
 
-local RESPONSE_PROTOCOL = 1
+const RESPONSE_PROTOCOL = 1
 
-local function MakeRemoteError(
+const function MakeRemoteError(
 	code: string,
 	message: string,
 	serviceName: string,
@@ -223,7 +223,7 @@ function Channel.IsRemoteError(value: any): boolean
 	return type(value) == "table" and value.ThreadRemoteError == true and type(value.Code) == "string"
 end
 
-local function SuccessResponse(values: { [any]: any }): { [string]: any }
+const function SuccessResponse(values: { [any]: any }): { [string]: any }
 	local encoded = table.create(values.n or #values)
 	for index = 1, values.n or #values do
 		encoded[index] = { HasValue = values[index] ~= nil, Value = values[index] }
@@ -231,7 +231,7 @@ local function SuccessResponse(values: { [any]: any }): { [string]: any }
 	return { ThreadProtocol = RESPONSE_PROTOCOL, Ok = true, Values = encoded }
 end
 
-local function ErrorResponse(remoteError: RemoteError): { [string]: any }
+const function ErrorResponse(remoteError: RemoteError): { [string]: any }
 	return { ThreadProtocol = RESPONSE_PROTOCOL, Ok = false, Error = remoteError }
 end
 
@@ -262,7 +262,7 @@ function Channel.DecodeResponse(response: any): ...any
 	return UnpackArgs(decoded)
 end
 
-local function EstimatePayloadBytes(
+const function EstimatePayloadBytes(
 	value: any,
 	seen: { [any]: boolean },
 	depth: number,
@@ -320,7 +320,7 @@ local function EstimatePayloadBytes(
 	return size, nil
 end
 
-local function ValidateInbound(
+const function ValidateInbound(
 	player: Player?,
 	args: { [any]: any },
 	policy: RemotePolicy?,
@@ -365,13 +365,13 @@ end
 -- Debug
 --------------------------------------------------
 
-local function Log(...)
+const function Log(...)
 	if Channel.Debug then
 		print("[Channel]", ...)
 	end
 end
 
-local function Warn(...)
+const function Warn(...)
 	warn("[Channel]", ...)
 end
 
@@ -405,10 +405,10 @@ end
 -- Rate Limiting
 --------------------------------------------------
 
-local RateBuckets = {} -- [player] = { [bucketKey] = { tokens, updatedAt } }
-local WarningTimes = {} -- [player] = { [warningKey] = timestamp }
+const RateBuckets = {} -- [player] = { [bucketKey] = { tokens, updatedAt } }
+const WarningTimes = {} -- [player] = { [warningKey] = timestamp }
 
-local function WarnRemoteThrottled(player: Player?, warningKey: string, ...: any)
+const function WarnRemoteThrottled(player: Player?, warningKey: string, ...: any)
 	if not player then
 		Warn(...)
 		return
@@ -422,7 +422,7 @@ local function WarnRemoteThrottled(player: Player?, warningKey: string, ...: any
 	end
 end
 
-local function CheckRateLimit(player: Player?, bucketKey: string, limit: number): boolean
+const function CheckRateLimit(player: Player?, bucketKey: string, limit: number): boolean
 	if not IsServer or not player then
 		return true
 	end
@@ -470,7 +470,7 @@ end
 
 -- Runs each middleware fn in order. A fn may mutate `args` in place to
 -- transform them, and returns `false` to stop the chain (drop the call).
-local function RunMiddleware(list: MiddlewareList?, player: Player?, args: { any }): boolean
+const function RunMiddleware(list: MiddlewareList?, player: Player?, args: { any }): boolean
 	if not list then
 		return true
 	end
@@ -493,7 +493,7 @@ end
 -- Folder Setup
 --------------------------------------------------
 
-local function GetOrCreateFolder(parent: Instance, name: string): Instance
+const function GetOrCreateFolder(parent: Instance, name: string): Instance
 	local folder = parent:FindFirstChild(name)
 
 	if folder then
@@ -540,20 +540,20 @@ local function GetOrCreateFolder(parent: Instance, name: string): Instance
 	return folder
 end
 
-local Root = GetOrCreateFolder(ReplicatedStorage, "ThreadChannel")
+const Root = GetOrCreateFolder(ReplicatedStorage, "ThreadChannel")
 
-local Cache: { [string]: Instance } = {}
-local Containers: { [string]: Instance } = {}
-local ServiceObjects: { [string]: { any } } = {}
-local ServiceReady: { [string]: boolean } = {}
-local ServiceManifests: { [string]: { { Name: string, Kind: string, Class: string } } } = {}
-local RemoteClasses = { "RemoteFunction", "RemoteEvent", "UnreliableRemoteEvent" }
+const Cache: { [string]: Instance } = {}
+const Containers: { [string]: Instance } = {}
+const ServiceObjects: { [string]: { any } } = {}
+const ServiceReady: { [string]: boolean } = {}
+const ServiceManifests: { [string]: { { Name: string, Kind: string, Class: string } } } = {}
+const RemoteClasses = table.freeze({ "RemoteFunction", "RemoteEvent", "UnreliableRemoteEvent" })
 
 --------------------------------------------------
 -- Containers (optionally namespaced per-service)
 --------------------------------------------------
 
-local function GetContainer(class: string, namespace: string?): Instance
+const function GetContainer(class: string, namespace: string?): Instance
 	local key = namespace and (class .. "\1" .. namespace) or class
 
 	if Containers[key] then
@@ -576,7 +576,7 @@ end
 -- Get/Create
 --------------------------------------------------
 
-local function Get(class: string, name: string, namespace: string?): Instance
+const function Get(class: string, name: string, namespace: string?): Instance
 	assert(type(class) == "string", "[Channel] class must be a string")
 	assert(type(name) == "string", "[Channel] name must be a string")
 
@@ -859,19 +859,25 @@ end
 -- Service-scoped API: markers
 --------------------------------------------------
 
-local SIGNAL_MARKER = newproxy(true);
-(getmetatable(SIGNAL_MARKER) :: any).__tostring = function()
-	return "SIGNAL_MARKER"
+const SIGNAL_MARKER = newproxy(true)
+do
+	(getmetatable(SIGNAL_MARKER) :: any).__tostring = function()
+		return "SIGNAL_MARKER"
+	end
 end
 
-local UNRELIABLE_SIGNAL_MARKER = newproxy(true);
-(getmetatable(UNRELIABLE_SIGNAL_MARKER) :: any).__tostring = function()
-	return "UNRELIABLE_SIGNAL_MARKER"
+const UNRELIABLE_SIGNAL_MARKER = newproxy(true)
+do
+	(getmetatable(UNRELIABLE_SIGNAL_MARKER) :: any).__tostring = function()
+		return "UNRELIABLE_SIGNAL_MARKER"
+	end
 end
 
-local PROPERTY_MARKER = newproxy(true);
-(getmetatable(PROPERTY_MARKER) :: any).__tostring = function()
-	return "PROPERTY_MARKER"
+const PROPERTY_MARKER = newproxy(true)
+do
+	(getmetatable(PROPERTY_MARKER) :: any).__tostring = function()
+		return "PROPERTY_MARKER"
+	end
 end
 
 function Channel.CreateSignal()
@@ -890,7 +896,7 @@ end
 -- Service-scoped API: Signal object
 --------------------------------------------------
 
-local Signal = {}
+const Signal = {}
 Signal.__index = Signal
 
 function Signal.new(
@@ -1037,12 +1043,12 @@ end
 -- Service-scoped API: Property object
 --------------------------------------------------
 
-local Property = {}
+const Property = {}
 Property.__index = Property
 
-local NIL_OVERRIDE = newproxy()
+const NIL_OVERRIDE = newproxy()
 
-local function DecodeOverride(value: any): any
+const function DecodeOverride(value: any): any
 	if value == NIL_OVERRIDE then
 		return nil
 	end

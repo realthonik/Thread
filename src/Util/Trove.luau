@@ -28,12 +28,12 @@ export type SignalLike = {
 	Connect: (self: SignalLike, fn: (...any) -> ...any) -> any,
 }
 
-local Trove = {}
+const Trove = {}
 Trove.__index = Trove
 
-local GENERIC_CLEANUP_METHODS = { "Destroy", "Disconnect", "destroy", "disconnect" }
+const GENERIC_CLEANUP_METHODS = table.freeze({ "Destroy", "Disconnect", "destroy", "disconnect" })
 
-local function getCleanupMethod(object: any, cleanupMethod: string?): string | "function" | "thread"
+const function getCleanupMethod(object: any, cleanupMethod: string?): string | "function" | "thread"
 	local t = typeof(object)
 
 	if t == "function" then

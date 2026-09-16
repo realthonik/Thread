@@ -34,12 +34,12 @@ export type Option<T> = {
 	OrElse: (self: Option<T>, fn: () -> Option<T>) -> Option<T>,
 }
 
-local CLASS_NAME = "Option"
+const CLASS_NAME = "Option"
 
-local Option = {}
+const Option = {}
 Option.__index = Option
 
-local function new(value: any): any
+const function new(value: any): any
 	return table.freeze(setmetatable({
 		ClassName = CLASS_NAME,
 		_value = value,

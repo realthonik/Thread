@@ -1,13 +1,13 @@
 --!strict
 
-local Thread = {}
-local Channel = require(script.Channel)
-local Promise = require(script.Promise)
-local Metadata = require(script.Generated.Metadata)
-local GeneratedServiceManifest = require(script.Generated.ServiceManifest) :: {
+const Thread = {}
+const Channel = require(script.Channel)
+const Promise = require(script.Promise)
+const Metadata = require(script.Generated.Metadata)
+const GeneratedServiceManifest = require(script.Generated.ServiceManifest) :: {
 	[string]: { { Name: string, Kind: string, Class: string } },
 }
-local GeneratedClients = require(script.Generated.Clients)
+const GeneratedClients = require(script.Generated.Clients)
 
 export type Middleware = Channel.Middleware
 export type ServiceDef = {
@@ -47,29 +47,29 @@ Thread._Order = {} :: { string }
 Thread._Status = {} :: { [string]: string }
 Thread._NeedsStop = {} :: { [string]: boolean }
 
-local StartPromise = Promise.new(function(resolve, reject)
+const StartPromise = Promise.new(function(resolve, reject)
 	Thread._ResolveStart = resolve
 	Thread._RejectStart = reject
 end)
-local StopPromise = Promise.new(function(resolve, reject)
+const StopPromise = Promise.new(function(resolve, reject)
 	Thread._ResolveStop = resolve
 	Thread._RejectStop = reject
 end)
 Thread._StopStarted = false
 
-local function ObserveLifecycle(promise)
+const function ObserveLifecycle(promise)
 	return promise:andThen(function(value)
 		return value
 	end)
 end
 
-local function Log(...)
+const function Log(...)
 	if Thread.Debug then
 		print("[Thread]", ...)
 	end
 end
 
-local function Warn(...)
+const function Warn(...)
 	warn("[Thread]", ...)
 end
 
@@ -217,7 +217,7 @@ function Thread.Register(folder: Instance, recursive: boolean?): { RegisterResul
 	return results
 end
 
-local function TopoSort(register: { [string]: Service }): ({ string }?, string?)
+const function TopoSort(register: { [string]: Service }): ({ string }?, string?)
 	local order: { string } = {}
 	local state: { [string]: "Visiting" | "Done" } = {}
 	local errorMessage: string? = nil
@@ -267,7 +267,7 @@ local function TopoSort(register: { [string]: Service }): ({ string }?, string?)
 	return order, nil
 end
 
-local function AwaitLifecycle(service: Service, methodName: string): (boolean, any)
+const function AwaitLifecycle(service: Service, methodName: string): (boolean, any)
 	local method = (service :: any)[methodName]
 	if type(method) ~= "function" then
 		return true, nil
@@ -290,7 +290,7 @@ local function AwaitLifecycle(service: Service, methodName: string): (boolean, a
 	return true, result
 end
 
-local function RejectStart(message: string)
+const function RejectStart(message: string)
 	if Thread._StartResolved then
 		return
 	end
@@ -303,7 +303,7 @@ local function RejectStart(message: string)
 	end
 end
 
-local function CompareGeneratedManifest(serviceName: string): string?
+const function CompareGeneratedManifest(serviceName: string): string?
 	local expected = GeneratedServiceManifest[serviceName]
 	if expected == nil then
 		return nil
@@ -326,7 +326,7 @@ local function CompareGeneratedManifest(serviceName: string): string?
 	return nil
 end
 
-local function RunStartup()
+const function RunStartup()
 	if Channel.IsServer then
 		for serviceName in pairs(GeneratedServiceManifest) do
 			if Thread._Register[serviceName] == nil then

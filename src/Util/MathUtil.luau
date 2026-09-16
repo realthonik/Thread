@@ -9,7 +9,7 @@
 	MathUtil.FuzzyEquals(0.1 + 0.2, 0.3, 1e-9) --> true
 ]]
 
-local MathUtil = {}
+const MathUtil = {}
 
 function MathUtil.Lerp(a: number, b: number, t: number): number
 	return a + (b - a) * t
