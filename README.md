@@ -17,8 +17,8 @@ Thread is a dependency-aware service framework and networking layer for Roblox. 
 
 ### Roblox Studio asset
 
-1. Open the [`v1.2.1` release](https://github.com/realthonik/Thread/releases/tag/v1.2.1).
-2. Download `Thread.v1.2.1.rbxm`.
+1. Open the [`v1.2.2` release](https://github.com/realthonik/Thread/releases/tag/v1.2.2).
+2. Download `Thread.v1.2.2.rbxm`.
 3. Drag it into Roblox Studio.
 4. Move the `Thread` ModuleScript to `ReplicatedStorage.Packages`.
 
@@ -46,11 +46,11 @@ Map `src` as the `Thread` ModuleScript:
 
 ### Wally
 
-The repository includes a Wally manifest for `realthonik/thread@1.2.1`. Check the [Wally package page](https://wally.run/package/realthonik/thread) before installing because corrected versions must be published separately and Wally versions are immutable. Use the Studio asset when `1.2.1` is not listed.
+The repository includes a Wally manifest for `realthonik/thread@1.2.2`. Check the [Wally package page](https://wally.run/package/realthonik/thread) before installing because corrected versions must be published separately and Wally versions are immutable. Use the Studio asset when `1.2.2` is not listed.
 
 ```toml
 [dependencies]
-Thread = "realthonik/thread@1.2.1"
+Thread = "realthonik/thread@1.2.2"
 ```
 
 ## Quick start

@@ -1,7 +1,7 @@
 {
   "package": {
     "name": "realthonik/thread",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "A dependency-aware service framework and networking layer for Roblox",
     "license": "MPL-2.0",
     "realm": "shared",

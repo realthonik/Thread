@@ -2,12 +2,17 @@
 
 ## Unreleased
 
+## v1.2.2
+
 ### Added
 
 - A graphical execution model for service registration, lifecycle sequencing, client readiness, failure handling, and shutdown.
 
 ### Changed
 
+- Immutable module-scope bindings now use Luau's `const` declarations.
+- Fixed internal lookup tables are now frozen to prevent accidental mutation.
+- Generated client bindings now use `const` declarations.
 - Corrected generated package and runtime license metadata to MPL-2.0.
 - Streamlined the README into a focused project overview and moved detailed guidance to the documentation website.
 
