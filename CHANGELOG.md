@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.1
+## v1.2.1
 
 ### Changed
 
@@ -13,7 +13,7 @@
 - Declared `ReplicatedStorage.Packages` as a Folder in the development and integration Rojo projects so both places build successfully.
 - Corrected the documented Rojo source mapping so `src` becomes the `Thread` ModuleScript under `ReplicatedStorage.Packages`.
 
-## v2.0.0
+## v1.2.0
 
 ### Added
 
@@ -74,7 +74,7 @@ Closes out the remaining gaps versus Knit that the beta left open, and adds hand
 ### Tests
 - Added coverage for per-player Property overrides, `Promise.race/some/retry/timeout/fromEvent`, and all five new Util modules to `Tests/Thread.spec.luau`.
 
-## beta
+## v1.0.0-beta1
 
 Rewrite on top of the original [mm5ck/Wire](https://github.com/mm5ck/Wire) v1.1.1, addressing the gaps identified when comparing it against Knit. Everything stays pure Luau for Roblox — **no Wally, no third-party packages, nothing outside the engine's own APIs** (Attributes, RemoteEvent/RemoteFunction/UnreliableRemoteEvent, Instance).
 
