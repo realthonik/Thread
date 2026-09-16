@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0
+## v1.2.0
 
 ### Added
 
@@ -43,7 +43,7 @@
 ### Fixed
 - **Middleware now actually applies to Signals and Properties, not just Methods.** `Channel.WrapService` previously only ran `Inbound`/`Outbound` middleware for `Client` methods — a service's `Middleware` field silently had no effect on Signals or Properties, despite the docs implying otherwise. Fixed: `Signal:Connect` now runs `Inbound` middleware on client→server fires; `Signal:Fire`/`:FireAll`/`:FireExcept` and `Property:Set`/`:SetFor` now run `Outbound` middleware before sending. `FireAll`/`FireExcept`/`Property:Set` call middleware with `player = nil` since there's no single target. Covered by two new tests in `Tests/Thread.spec.luau`.
 
-## 1.0.0
+## v1.0.0
 
 Closes out the remaining gaps versus Knit that the beta left open, and adds hand-written equivalents of the most-used [RbxUtil](https://github.com/Sleitnick/RbxUtil) modules (the same utility collection Knit itself is built on) as new, independent Util modules. Still zero external dependencies — every module below was written from scratch for this project; nothing is vendored or pulled in via Wally.
 
@@ -61,7 +61,7 @@ Closes out the remaining gaps versus Knit that the beta left open, and adds hand
 ### Tests
 - Added coverage for per-player Property overrides, `Promise.race/some/retry/timeout/fromEvent`, and all five new Util modules to `Tests/Thread.spec.luau`.
 
-## beta
+## v1.0.0-beta.1
 
 Rewrite on top of the original [mm5ck/Wire](https://github.com/mm5ck/Wire) v1.1.1, addressing the gaps identified when comparing it against Knit. Everything stays pure Luau for Roblox — **no Wally, no third-party packages, nothing outside the engine's own APIs** (Attributes, RemoteEvent/RemoteFunction/UnreliableRemoteEvent, Instance).
 
