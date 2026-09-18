@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b0d10'/%3E%3Cpath d='M15 18h34M32 18v30M20 30h24' stroke='%23ff5c35' stroke-width='7' stroke-linecap='square'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/style.css?v=2">
 </head>
 <body>
 <div class="layout">
@@ -86,7 +86,7 @@
 	<p>A service can define three lifecycle methods. Each may return a Promise, which Thread awaits before continuing:</p>
 
 	<figure class="execution-model">
-		<img src="assets/execution-model.svg" alt="Thread execution model from service registration through dependency ordering, remote binding, initialization, startup, client readiness, and reverse-order shutdown.">
+		<img src="assets/execution-model.svg?v=2" alt="Thread execution model from service registration through dependency ordering, remote binding, initialization, startup, client readiness, and reverse-order shutdown.">
 		<figcaption>
 			Thread completes each startup phase in dependency order. Clients can wait for a published service manifest while
 			<code>Thread.OnStart()</code> independently observes local startup.
@@ -202,7 +202,7 @@ Thread.Stop():await()</code></pre>
 </div>
 </main>
 </div>
-<script src="assets/main.js"></script>
+<script src="assets/main.js?v=2"></script>
 </body>
 </html>
 
