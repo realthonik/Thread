@@ -23,7 +23,7 @@
 	<div class="nav-group">
 		<div class="nav-group-title">Get Started</div>
 		<a href="index.html" class="active">Home</a>
-		<a href="installation.html">Installation &amp; Anatomy</a>
+		<a href="installation.html">Installation &amp; Project Structure</a>
 	</div>
 
 	<div class="nav-group">
@@ -51,36 +51,16 @@
 <main>
 <div class="content home-content">
 	<section class="home-hero">
-		<div class="home-hero-copy">
-			<div class="home-kicker"><span></span> Thread 1.2.2 for Roblox</div>
-			<h1>Build the server.<br><em>Keep the wiring quiet.</em></h1>
-			<p>Thread is a small, strict-Luau framework for services, typed client APIs, and predictable startup. It handles the plumbing so your game code can stay focused.</p>
-			<div class="home-actions"><a class="button button-primary" href="installation.html">Get started <span>→</span></a><a class="button button-quiet" href="https://github.com/realthonik/Thread" target="_blank" rel="noopener">View source <span>↗</span></a></div>
-			<div class="home-tags" aria-label="Framework highlights"><span>Roblox-native</span><span>Studio-ready release</span><span>Strict Luau</span></div>
-		</div>
-		<div class="home-schematic" aria-label="Thread service flow">
-			<div class="schematic-topline"><span>THREAD</span><span>READY</span></div>
-			<div class="schematic-node node-service"><span class="node-dot"></span><div><b>MoneyService</b><small>server service</small></div><code>01</code></div>
-			<div class="schematic-line"><i></i><span>Client contract</span></div>
-			<div class="schematic-node node-client"><span class="node-dot"></span><div><b>MoneyService</b><small>typed client proxy</small></div><code>02</code></div>
-			<div class="schematic-events"><span>GetMoney()</span><span>MoneyChanged</span><span>Jackpot</span></div>
-		</div>
-	</section>
-
-	<section class="home-principles" aria-label="What Thread provides">
-		<div><strong>Services</strong><span>Keep server logic structured and discoverable.</span></div>
-		<div><strong>Client contracts</strong><span>Expose methods, signals, and properties without remote boilerplate.</span></div>
-		<div><strong>Lifecycle control</strong><span>Initialize dependencies first, then start in a known order.</span></div>
-	</section>
-
-	<section class="home-section">
-		<div class="section-heading"><span>01</span><div><p class="eyebrow">The idea</p><h2>One service table, one public contract.</h2></div></div>
-		<p class="home-intro">Define server behavior and the client surface in the same place. Thread builds the connection, including rate limits and invoke timeouts, instead of leaving a tangle of remote instances behind.</p>
-		<div class="home-note"><span>Client</span><p>The server's <code>Client</code> table is the API the client receives. No string-matching two ends by hand.</p></div>
+		<p class="home-kicker">Roblox service framework</p>
+		<h1>Thread</h1>
+		<p class="home-summary">Thread organizes server services and exposes typed client APIs without manually wiring RemoteEvents and RemoteFunctions.</p>
+		<div class="home-actions"><a class="button button-primary" href="installation.html">Install Thread</a><a class="button button-quiet" href="https://github.com/realthonik/Thread" target="_blank" rel="noopener">GitHub <span>↗</span></a></div>
+		<div class="home-meta" aria-label="Project details"><span>Roblox</span><span>Strict Luau</span><span>v1.2.2</span><span>No runtime dependencies</span></div>
 	</section>
 
 	<section class="home-section home-start">
-		<div class="section-heading"><span>02</span><div><p class="eyebrow">Quick start</p><h2>Register, then start.</h2></div></div>
+		<h2>Quick start</h2>
+		<p>Register the folder containing your services, then start Thread.</p>
 		<div class="home-code-grid"><div class="home-code-panel"><div class="code-panel-label">ServerScriptService/Server.server.lua</div>
 	<pre><code><span class="tok-keyword">local</span> Thread = <span class="tok-func">require</span>(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ReplicatedStorage"</span>).Packages.Thread)
 
@@ -111,37 +91,27 @@ Thread.Start():catch(<span class="tok-func">warn</span>)</code></pre></div>
 	<p class="home-after-code">On the client, <code>Channel.BuildClient("MoneyService")</code> returns a proxy with <code>:GetMoney()</code>, a connectable <code>MoneyChanged</code> signal, and an observable <code>Jackpot</code> property.</p>
 	</section>
 
+	<section class="home-section home-details">
+		<h2>What Thread handles</h2>
+		<ul class="home-feature-list">
+			<li><strong>Service lifecycle</strong><span>Initializes dependencies first and stops services in reverse order.</span></li>
+			<li><strong>Client APIs</strong><span>Builds remotes from each service's <code>Client</code> table.</span></li>
+			<li><strong>Network controls</strong><span>Supports validation, middleware, rate limits, and invoke timeouts.</span></li>
+			<li><strong>Failure handling</strong><span>Skips unhealthy dependents and rejects startup when a critical service fails.</span></li>
+		</ul>
+	</section>
+
 	<section class="home-section home-explore">
-		<div class="section-heading"><span>03</span><div><p class="eyebrow">Documentation</p><h2>Go straight to the useful part.</h2></div></div>
-	<div class="card-grid">
-		<a class="card" href="installation.html">
-			<div class="card-title">Installation &amp; Anatomy <span>→</span></div>
-			<p class="card-desc">Copy the Packages folder in and understand what each file does.</p>
-		</a>
-		<a class="card" href="services.html">
-			<div class="card-title">Services &amp; Lifecycle <span>→</span></div>
-			<p class="card-desc">ThreadInit, ThreadStart, Register, Start, and startup flow.</p>
-		</a>
-		<a class="card" href="client-table.html">
-			<div class="card-title">Client APIs &amp; Networking <span>→</span></div>
-			<p class="card-desc">Methods, signals, properties, and the wiring underneath.</p>
-		</a>
-		<a class="card" href="dependencies-middleware.html">
-			<div class="card-title">Dependencies &amp; Middleware <span>→</span></div>
-			<p class="card-desc">Service ordering, request validation, and critical-failure handling.</p>
-		</a>
-		<a class="card" href="promise.html">
-			<div class="card-title">Promise <span>→</span></div>
-			<p class="card-desc">Race, retry, timeout, fromEvent, and the rest of the async tools.</p>
-		</a>
-			<a class="card" href="utilities.html">
-				<div class="card-title">Util Modules <span>→</span></div>
-				<p class="card-desc">Signals, cleanup, tables, options, enums, math, and timers.</p>
-			</a>
-			<a class="card" href="reference.html">
-				<div class="card-title">Cheat Sheet &amp; API Tables <span>→</span></div>
-				<p class="card-desc">A compact reference for types, methods, and configuration options.</p>
-			</a>
+		<h2>Documentation</h2>
+		<div class="docs-list">
+			<a href="installation.html"><span>Installation &amp; Project Structure</span><small>Install the release asset, map the source with Rojo, or use Wally.</small></a>
+			<a href="services.html"><span>Services &amp; Lifecycle</span><small>Register services and control startup, shutdown, and dependencies.</small></a>
+			<a href="client-table.html"><span>Client Table &amp; Networking</span><small>Expose methods, signals, and properties to clients.</small></a>
+			<a href="dependencies-middleware.html"><span>Dependencies, Middleware &amp; Failure</span><small>Order services, validate requests, and handle failures.</small></a>
+			<a href="configuration.html"><span>Configuration &amp; Low-Level API</span><small>Configure Thread and use the lower-level networking primitives.</small></a>
+			<a href="promise.html"><span>Promise</span><small>Use the built-in async primitives for retries, timeouts, and cancellation.</small></a>
+			<a href="utilities.html"><span>Utility Modules</span><small>Signals, cleanup, tables, options, enums, math, and timers.</small></a>
+			<a href="reference.html"><span>API Reference</span><small>Look up types, methods, and configuration options.</small></a>
 		</div>
 	</section>
 
@@ -149,7 +119,7 @@ Thread.Start():catch(<span class="tok-func">warn</span>)</code></pre></div>
 		<span></span>
 		<a class="next" href="installation.html">
 			<span class="dir">Next</span>
-			Installation &amp; Anatomy →
+			Installation &amp; Project Structure →
 		</a>
 	</div>
 
