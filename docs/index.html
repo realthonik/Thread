@@ -1,131 +1,155 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Thread — a lightweight Roblox service framework</title>
-<meta name="description" content="Thread is a lightweight Roblox framework for services, typed networking, and predictable startup.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%236e56cf%22/><path d=%22M17 17h30v9H36v21h-9V26H17z%22 fill=%22white%22/></svg>">
-<link rel="stylesheet" href="assets/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Thread organizes Roblox server services and exposes typed client APIs without manually wiring remotes.">
+  <meta name="theme-color" content="#0b0d10">
+  <title>Thread | Roblox service framework</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b0d10'/%3E%3Cpath d='M15 18h34M32 18v30M20 30h24' stroke='%23ff5c35' stroke-width='7' stroke-linecap='square'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/homepage.css">
 </head>
 <body>
-<div class="layout">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Thread home">
+      <span class="brand-mark" aria-hidden="true">T/</span>
+      <span>THREAD</span>
+    </a>
+    <div class="topbar-meta">
+      <span>ROBLOX / LUAU</span>
+      <span>v1.2.2</span>
+    </div>
+    <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">MENU</button>
+  </header>
 
-<button class="menu-toggle" aria-expanded="false" aria-label="Toggle navigation menu">☰ Menu</button>
+  <div class="site-shell">
+    <aside class="sidebar" id="site-nav">
+      <nav aria-label="Documentation navigation">
+        <p class="nav-kicker">Get started</p>
+        <a class="active" href="index.html" aria-current="page"><span>01</span>Overview</a>
+        <a href="installation.html"><span>02</span>Installation &amp; structure</a>
 
-<nav class="sidebar">
-	<div class="sidebar-brand">
-		<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-		<span class="brand-wordmark">Thread</span>
-		<span class="version">v1.2.2</span>
-	</div>
+        <p class="nav-kicker">Core concepts</p>
+        <a href="services.html"><span>03</span>Services &amp; lifecycle</a>
+        <a href="client-table.html"><span>04</span>Client table &amp; networking</a>
+        <a href="dependencies-middleware.html"><span>05</span>Dependencies &amp; failure</a>
 
-	<div class="nav-group">
-		<div class="nav-group-title">Get Started</div>
-		<a href="index.html" class="active">Home</a>
-		<a href="installation.html">Installation &amp; Project Structure</a>
-	</div>
+        <p class="nav-kicker">Reference</p>
+        <a href="configuration.html"><span>06</span>Configuration &amp; API</a>
+        <a href="promise.html"><span>07</span>Promise</a>
+        <a href="utilities.html"><span>08</span>Util modules</a>
+        <a href="reference.html"><span>09</span>Cheat sheet &amp; types</a>
+      </nav>
+      <a class="repo-link" href="https://github.com/realthonik/Thread" target="_blank" rel="noreferrer">GitHub repository <span>↗</span></a>
+    </aside>
 
-	<div class="nav-group">
-		<div class="nav-group-title">Core Concepts</div>
-		<a href="services.html">Services &amp; Lifecycle</a>
-		<a href="client-table.html">Client Table &amp; Networking</a>
-		<a href="dependencies-middleware.html">Dependencies, Middleware &amp; Failure</a>
-	</div>
+    <main id="content">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow">Lightweight service framework</p>
+          <h1 id="page-title">Build the service.<br><span>Skip the wiring.</span></h1>
+          <p class="lede">Thread organizes server services and exposes typed client APIs without manually wiring RemoteEvents and RemoteFunctions.</p>
+          <div class="intro-actions">
+            <a class="button button-primary" href="installation.html">Install Thread <span>→</span></a>
+            <a class="button button-plain" href="https://github.com/realthonik/Thread" target="_blank" rel="noreferrer">View source ↗</a>
+          </div>
+        </div>
+        <dl class="project-facts" aria-label="Project details">
+          <div><dt>Target</dt><dd>Roblox</dd></div>
+          <div><dt>Language</dt><dd>Strict Luau</dd></div>
+          <div><dt>Release</dt><dd>v1.2.2</dd></div>
+          <div><dt>Runtime deps</dt><dd>None</dd></div>
+        </dl>
+      </section>
 
-	<div class="nav-group">
-		<div class="nav-group-title">Reference</div>
-		<a href="configuration.html">Configuration &amp; Low-Level API</a>
-		<a href="promise.html">Promise</a>
-		<a href="utilities.html">Util Modules</a>
-		<a href="reference.html">Cheat Sheet, Types &amp; API Tables</a>
-	</div>
+      <section class="quickstart" aria-labelledby="quickstart-title">
+        <div class="section-label"><span>01</span><p>First run</p></div>
+        <div class="section-body">
+          <h2 id="quickstart-title">Quick start</h2>
+          <p class="section-intro">Register the folder containing your services, then start Thread.</p>
 
-	<div class="sidebar-footer">
-		<a href="https://github.com/realthonik/Thread" target="_blank" rel="noopener">GitHub Repository ↗</a>
-	</div>
-</nav>
+          <article class="code-block">
+            <header><span>ServerScriptService/Server.server.lua</span><button type="button" class="copy-button" data-copy="server-code">COPY</button></header>
+            <pre><code id="server-code"><span class="kw">local</span> Thread = <span class="fn">require</span>(game:<span class="fn">GetService</span>(<span class="str">"ReplicatedStorage"</span>).Packages.Thread)
 
-<div class="sidebar-backdrop"></div>
+Thread.<span class="fn">Register</span>(game:<span class="fn">GetService</span>(<span class="str">"ServerScriptService"</span>).Services)
+Thread.<span class="fn">Start</span>():<span class="fn">catch</span>(warn)</code></pre>
+          </article>
 
-<main>
-<div class="content home-content">
-	<section class="home-hero">
-		<p class="home-kicker">Roblox service framework</p>
-		<h1>Thread</h1>
-		<p class="home-summary">Thread organizes server services and exposes typed client APIs without manually wiring RemoteEvents and RemoteFunctions.</p>
-		<div class="home-actions"><a class="button button-primary" href="installation.html">Install Thread</a><a class="button button-quiet" href="https://github.com/realthonik/Thread" target="_blank" rel="noopener">GitHub <span>↗</span></a></div>
-		<div class="home-meta" aria-label="Project details"><span>Roblox</span><span>Strict Luau</span><span>v1.2.2</span><span>No runtime dependencies</span></div>
-	</section>
+          <article class="code-block">
+            <header><span>Services/MoneyService.luau</span><button type="button" class="copy-button" data-copy="service-code">COPY</button></header>
+            <pre><code id="service-code"><span class="kw">local</span> Thread = <span class="fn">require</span>(game:<span class="fn">GetService</span>(<span class="str">"ReplicatedStorage"</span>).Packages.Thread)
 
-	<section class="home-section home-start">
-		<h2>Quick start</h2>
-		<p>Register the folder containing your services, then start Thread.</p>
-		<div class="home-code-grid"><div class="home-code-panel"><div class="code-panel-label">ServerScriptService/Server.server.lua</div>
-	<pre><code><span class="tok-keyword">local</span> Thread = <span class="tok-func">require</span>(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ReplicatedStorage"</span>).Packages.Thread)
-
-Thread.Register(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ServerScriptService"</span>).Services)
-Thread.Start():catch(<span class="tok-func">warn</span>)</code></pre></div>
-
-<div class="home-code-panel"><div class="code-panel-label">Services/MoneyService.luau</div><pre><code><span class="tok-keyword">local</span> Thread = <span class="tok-func">require</span>(<span class="tok-func">game</span>:GetService(<span class="tok-string">"ReplicatedStorage"</span>).Packages.Thread)
-
-<span class="tok-keyword">local</span> MoneyService = Thread.CreateService({
-    Name = <span class="tok-string">"MoneyService"</span>,
+<span class="kw">local</span> MoneyService = Thread.<span class="fn">CreateService</span>({
+    Name = <span class="str">"MoneyService"</span>,
     Client = {
-        GetMoney = <span class="tok-keyword">function</span>(self, player)
-            <span class="tok-keyword">return</span> self.Server:GetMoney(player)
-        <span class="tok-keyword">end</span>,
-        MoneyChanged = Thread.CreateSignal(),
-        Jackpot = Thread.CreateProperty(<span class="tok-string">0</span>),
+        GetMoney = <span class="kw">function</span>(self, player)
+            <span class="kw">return</span> self.Server:<span class="fn">GetMoney</span>(player)
+        <span class="kw">end</span>,
+        MoneyChanged = Thread.<span class="fn">CreateSignal</span>(),
+        Jackpot = Thread.<span class="fn">CreateProperty</span>(<span class="num">0</span>),
     },
 })
 
-<span class="tok-keyword">local</span> balances = {}
+<span class="kw">local</span> balances = {}
 
-<span class="tok-keyword">function</span> MoneyService:GetMoney(player)
-    <span class="tok-keyword">return</span> balances[player] <span class="tok-keyword">or</span> <span class="tok-string">0</span>
-<span class="tok-keyword">end</span>
+<span class="kw">function</span> MoneyService:<span class="fn">GetMoney</span>(player)
+    <span class="kw">return</span> balances[player] <span class="kw">or</span> <span class="num">0</span>
+<span class="kw">end</span>
 
-<span class="tok-keyword">return</span> MoneyService</code></pre></div></div>
+<span class="kw">return</span> MoneyService</code></pre>
+          </article>
 
-	<p class="home-after-code">On the client, <code>Channel.BuildClient("MoneyService")</code> returns a proxy with <code>:GetMoney()</code>, a connectable <code>MoneyChanged</code> signal, and an observable <code>Jackpot</code> property.</p>
-	</section>
+          <aside class="note">
+            <span class="note-mark" aria-hidden="true">i</span>
+            <p>On the client, <code>Channel.BuildClient("MoneyService")</code> returns a proxy with <code>:GetMoney()</code>, a connectable <code>MoneyChanged</code> signal, and an observable <code>Jackpot</code> property.</p>
+          </aside>
+        </div>
+      </section>
 
-	<section class="home-section home-details">
-		<h2>What Thread handles</h2>
-		<ul class="home-feature-list">
-			<li><strong>Service lifecycle</strong><span>Initializes dependencies first and stops services in reverse order.</span></li>
-			<li><strong>Client APIs</strong><span>Builds remotes from each service's <code>Client</code> table.</span></li>
-			<li><strong>Network controls</strong><span>Supports validation, middleware, rate limits, and invoke timeouts.</span></li>
-			<li><strong>Failure handling</strong><span>Skips unhealthy dependents and rejects startup when a critical service fails.</span></li>
-		</ul>
-	</section>
+      <section class="handles" aria-labelledby="handles-title">
+        <div class="section-label"><span>02</span><p>Built in</p></div>
+        <div class="section-body">
+          <h2 id="handles-title">What Thread handles</h2>
+          <div class="feature-list">
+            <article><span>01</span><div><h3>Service lifecycle</h3><p>Initializes dependencies first and stops services in reverse order.</p></div></article>
+            <article><span>02</span><div><h3>Client APIs</h3><p>Builds remotes from each service's <code>Client</code> table.</p></div></article>
+            <article><span>03</span><div><h3>Network controls</h3><p>Supports validation, middleware, rate limits, and invoke timeouts.</p></div></article>
+            <article><span>04</span><div><h3>Failure handling</h3><p>Skips unhealthy dependents and rejects startup when a critical service fails.</p></div></article>
+          </div>
+        </div>
+      </section>
 
-	<section class="home-section home-explore">
-		<h2>Documentation</h2>
-		<div class="docs-list">
-			<a href="installation.html"><span>Installation &amp; Project Structure</span><small>Install the release asset, map the source with Rojo, or use Wally.</small></a>
-			<a href="services.html"><span>Services &amp; Lifecycle</span><small>Register services and control startup, shutdown, and dependencies.</small></a>
-			<a href="client-table.html"><span>Client Table &amp; Networking</span><small>Expose methods, signals, and properties to clients.</small></a>
-			<a href="dependencies-middleware.html"><span>Dependencies, Middleware &amp; Failure</span><small>Order services, validate requests, and handle failures.</small></a>
-			<a href="configuration.html"><span>Configuration &amp; Low-Level API</span><small>Configure Thread and use the lower-level networking primitives.</small></a>
-			<a href="promise.html"><span>Promise</span><small>Use the built-in async primitives for retries, timeouts, and cancellation.</small></a>
-			<a href="utilities.html"><span>Utility Modules</span><small>Signals, cleanup, tables, options, enums, math, and timers.</small></a>
-			<a href="reference.html"><span>API Reference</span><small>Look up types, methods, and configuration options.</small></a>
-		</div>
-	</section>
+      <section class="docs" aria-labelledby="docs-title">
+        <div class="section-label"><span>03</span><p>Go deeper</p></div>
+        <div class="section-body">
+          <h2 id="docs-title">Documentation</h2>
+          <div class="docs-list">
+            <a href="installation.html"><span class="doc-number">01</span><div><h3>Installation &amp; project structure</h3><p>Install the release asset, map the source with Rojo, or use Wally.</p></div><span class="arrow">→</span></a>
+            <a href="services.html"><span class="doc-number">02</span><div><h3>Services &amp; lifecycle</h3><p>Register services and control startup, shutdown, and dependencies.</p></div><span class="arrow">→</span></a>
+            <a href="client-table.html"><span class="doc-number">03</span><div><h3>Client table &amp; networking</h3><p>Expose methods, signals, and properties to clients.</p></div><span class="arrow">→</span></a>
+            <a href="dependencies-middleware.html"><span class="doc-number">04</span><div><h3>Dependencies, middleware &amp; failure</h3><p>Order services, validate requests, and handle failures.</p></div><span class="arrow">→</span></a>
+            <a href="configuration.html"><span class="doc-number">05</span><div><h3>Configuration &amp; low-level API</h3><p>Configure Thread and use the lower-level networking primitives.</p></div><span class="arrow">→</span></a>
+            <a href="promise.html"><span class="doc-number">06</span><div><h3>Promise</h3><p>Use the built-in async primitives for retries, timeouts, and cancellation.</p></div><span class="arrow">→</span></a>
+            <a href="utilities.html"><span class="doc-number">07</span><div><h3>Utility modules</h3><p>Signals, cleanup, tables, options, enums, math, and timers.</p></div><span class="arrow">→</span></a>
+            <a href="reference.html"><span class="doc-number">08</span><div><h3>API reference</h3><p>Look up types, methods, and configuration options.</p></div><span class="arrow">→</span></a>
+          </div>
+        </div>
+      </section>
 
-	<div class="page-nav">
-		<span></span>
-		<a class="next" href="installation.html">
-			<span class="dir">Next</span>
-			Installation &amp; Project Structure →
-		</a>
-	</div>
-
-</div>
-</main>
-</div>
-<script src="assets/main.js"></script>
+      <footer>
+        <p>Thread v1.2.2</p>
+        <a href="installation.html">Next: Installation &amp; project structure <span>→</span></a>
+      </footer>
+    </main>
+  </div>
+  <script src="assets/homepage.js"></script>
 </body>
 </html>
+
+
+
